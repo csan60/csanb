@@ -17,9 +17,9 @@ public class CyclicStrategy implements Strategy {
 <span class="fc bfc" id="L17" title="All 2 branches covered.">			board.unsafe_move(pos - lst &lt;= cycle.length</span>
 <span class="fc" id="L18">					? cycle[pos % cycle.length]</span>
 <span class="fc" id="L19">					: Board.moves[pos % Board.moves.length]);</span>
-<span class="pc bpc" id="L20" title="1 of 2 branches missed.">			if (board.changed) {</span>
-<span class="nc" id="L21">				board.unsafe_spawn();</span>
-<span class="nc" id="L22">				lst = pos;</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">			if (board.changed) {</span>
+<span class="fc" id="L21">				board.unsafe_spawn();</span>
+<span class="fc" id="L22">				lst = pos;</span>
 			}
 		}
 <span class="fc" id="L25">		return board;</span>

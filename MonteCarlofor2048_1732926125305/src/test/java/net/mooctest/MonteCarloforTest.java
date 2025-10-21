@@ -4,6 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.security.InvalidParameterException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -674,4 +675,141 @@ public class MonteCarloforTest {
         assertEquals(s0, sn.value(), 1e-9);
     }
 
+    // ------- Node 子类：用于覆盖SpawnNode/ChoiceNode的更多分支 -------
+    static class TestNodeSame extends Node {
+        private double inc;
+        TestNodeSame(Board board, double value, double inc) {
+            super(board);
+            this.value = value;
+            this.visits = 0;
+            this.inc = inc;
+        }
+        @Override Node expand() {
+            this.visits += 1;
+            this.value += inc;
+            return this;
+        }
+        @Override Node select(boolean explore) { return this; }
+    }
+
+    static class TestNodeReplaceExpanding extends Node {
+        private double newValue;
+        TestNodeReplaceExpanding(Board board, double value, double newValue) {
+            super(board);
+            this.value = value;
+            this.visits = 0;
+            this.newValue = newValue;
+        }
+        @Override Node expand() {
+            // 返回一个新的节点以触发children替换分支
+            return new TestNodeSame(this.board(), newValue, 0);
+        }
+        @Override Node select(boolean explore) { return this; }
+    }
+
+    @Test
+    public void testChoiceNodeExpandReplacesChild() throws Exception {
+        // 目的：当子节点expand返回新实例时，ChoiceNode应替换该子节点并更新价值
+        Board b = new Board();
+        List<Node> children = new ArrayList<>();
+        // 初始子节点价值为1，expand后新节点价值设为5
+        TestNodeReplaceExpanding child = new TestNodeReplaceExpanding(b, 1.0, 5.0);
+        children.add(child);
+        ChoiceNode cn = new ChoiceNode(b, 0.0, children);
+        double before = cn.value();
+        int visitsBefore = cn.visits();
+        cn.expand();
+        assertEquals(visitsBefore + 1, cn.visits());
+        // 价值应增加 (5 - 1) = 4
+        assertEquals(before + 4.0, cn.value(), 1e-9);
+    }
+
+    @Test
+    public void testSpawnNodeSelectExistingChildSameInstanceValueUpdate() throws Exception {
+        // 目的：覆盖SpawnNode.select中的wasNew=false分支，且child.expand返回自身
+        new UCTStrategy(0, false, new ZeroMeasure(), new Strategy() {
+            @Override public Board play(Board board) { return board; }
+        });
+        Board b = makeBoard(
+                1,2,3,4,
+                5,6,7,8,
+                9,10,11,12,
+                13,14,15,0
+        );
+        SpawnNode sn = new SpawnNode(b);
+        double s0 = sn.value();
+        // 通过反射向children中注入与原board相等的子节点
+        Field f = SpawnNode.class.getDeclaredField("children");
+        f.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<Node> list = (List<Node>) f.get(sn);
+        TestNodeSame injected = new TestNodeSame(sn.board(), 2.0, 3.0);
+        list.add(injected);
+        // 第一次select应返回已存在的子节点，并设置wasNew=false
+        Node sel = sn.select(true);
+        assertSame(injected, sel);
+        sn.expand();
+        // expand后：value += (child.value_after - oldValue) = (5 - 2) = 3
+        assertEquals(s0 + 3.0, sn.value(), 1e-9);
+    }
+
+    @Test
+    public void testSpawnNodeSelectExistingChildReplacementValueUpdate() throws Exception {
+        // 目的：覆盖SpawnNode.select中的wasNew=false分支，且child.expand返回新实例
+        new UCTStrategy(0, false, new ZeroMeasure(), new Strategy() {
+            @Override public Board play(Board board) { return board; }
+        });
+        Board b = makeBoard(
+                1,2,3,4,
+                5,6,7,8,
+                9,10,11,12,
+                13,14,15,0
+        );
+        SpawnNode sn = new SpawnNode(b);
+        double s0 = sn.value();
+        Field f = SpawnNode.class.getDeclaredField("children");
+        f.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<Node> list = (List<Node>) f.get(sn);
+        // 初始值2，expand后替换为新节点值7
+        TestNodeReplaceExpanding injected = new TestNodeReplaceExpanding(sn.board(), 2.0, 7.0);
+        list.add(injected);
+        Node sel = sn.select(true);
+        assertSame(injected, sel);
+        sn.expand();
+        // 价值变化 7 - 2 = 5
+        assertEquals(s0 + 5.0, sn.value(), 1e-9);
+    }
+
+    @Test
+    public void testCyclicStrategyMixedMoves() {
+        // 目的：覆盖CyclicStrategy中changed为true与false的分支
+        // 初始仅底行可通过向右合并改变，向上无变化
+        Board b = makeBoard(
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                1,1,0,0
+        );
+        CyclicStrategy cs = new CyclicStrategy(Board.UP, Board.RIGHT);
+        Board res = cs.play(b);
+        // 至少应发生一次变化
+        assertNotEquals(b, res);
+    }
+
+    @Test
+    public void testUCTStrategyVerboseSingleIteration() {
+        // 目的：进入UCTStrategy.play循环一次，并触发verbose分支打印
+        Board b = makeBoard(
+                5,6,7,8,
+                9,10,11,12,
+                13,14,15,9,
+                1,1,3,4
+        );
+        UCTStrategy uct = new UCTStrategy(1, true, new ZeroMeasure(), new Strategy() {
+            @Override public Board play(Board board) { return board; }
+        });
+        Board res = uct.play(b.copy());
+        assertTrue(res.isStuck());
+    }
 }

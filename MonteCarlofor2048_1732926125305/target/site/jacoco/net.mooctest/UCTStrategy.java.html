@@ -27,27 +27,27 @@ public class UCTStrategy implements Strategy {
 	public Board play(Board board) {
 <span class="fc" id="L28">		Node node = new ChoiceLeaf(board);</span>
 //		int k = 0;
-<span class="pc bpc" id="L30" title="1 of 2 branches missed.">		while (!node.board().isStuck()) {</span>
-<span class="nc bnc" id="L31" title="All 2 branches missed.">			for (int i = 0; i &lt; expands; i++) {</span>
-<span class="nc" id="L32">				node = node.expand();</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">		while (!node.board().isStuck()) {</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">			for (int i = 0; i &lt; expands; i++) {</span>
+<span class="fc" id="L32">				node = node.expand();</span>
 			}
-<span class="nc bnc" id="L34" title="All 2 branches missed.">			if (verbose) {</span>
-<span class="nc bnc" id="L35" title="All 2 branches missed.">				for (Node child : ((ChoiceNode)node).children) {</span>
-<span class="nc" id="L36">					System.out.println((child.value()/child.visits())+&quot; / &quot;+child.visits());</span>
-<span class="nc" id="L37">				}</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">			if (verbose) {</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">				for (Node child : ((ChoiceNode)node).children) {</span>
+<span class="fc" id="L36">					System.out.println((child.value()/child.visits())+&quot; / &quot;+child.visits());</span>
+<span class="fc" id="L37">				}</span>
 			}
 
 			// Play the best move
-<span class="nc" id="L41">			node = node.select(false);</span>
+<span class="fc" id="L41">			node = node.select(false);</span>
 //			if (verbose) {
 //				System.out.println(k++ +&quot; &quot;+node.value()/(node.visits()+1));
 //			}
 //			node.board().print();
 			// Play a random move
-<span class="nc" id="L47">			node = node.select(false);</span>
+<span class="fc" id="L47">			node = node.select(false);</span>
 
-<span class="nc bnc" id="L49" title="All 2 branches missed.">			if (verbose) {</span>
-<span class="nc" id="L50">				node.board().print();</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">			if (verbose) {</span>
+<span class="fc" id="L50">				node.board().print();</span>
 			}
 		}
 <span class="fc" id="L53">		return node.board();</span>
@@ -126,9 +126,9 @@ abstract class Node {
 <span class="fc" id="L126">		double oldValue = node.value();</span>
 
 <span class="fc" id="L128">		Node node1 = node.expand();</span>
-<span class="pc bpc" id="L129" title="1 of 2 branches missed.">		if (node != node1) {</span>
-<span class="nc" id="L130">			children.remove(node);</span>
-<span class="nc" id="L131">			children.add(node1);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">		if (node != node1) {</span>
+<span class="fc" id="L130">			children.remove(node);</span>
+<span class="fc" id="L131">			children.add(node1);</span>
 		}
 
 <span class="fc" id="L134">		visits += 1;</span>
@@ -232,16 +232,16 @@ class SpawnNode extends Node {
 	public Node expand() {
 <span class="fc" id="L233">		visits += 1;</span>
 <span class="fc" id="L234">		Node child = select(true);</span>
-<span class="pc bpc" id="L235" title="1 of 2 branches missed.">		if (wasNew) {</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">		if (wasNew) {</span>
 <span class="fc" id="L236">			value += child.value();</span>
 		} else {
-<span class="nc" id="L238">			double oldValue = child.value();</span>
-<span class="nc" id="L239">			Node child1 = child.expand();</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">			if (child != child1) {</span>
-<span class="nc" id="L241">				children.remove(child);</span>
-<span class="nc" id="L242">				children.add(child1);</span>
+<span class="fc" id="L238">			double oldValue = child.value();</span>
+<span class="fc" id="L239">			Node child1 = child.expand();</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">			if (child != child1) {</span>
+<span class="fc" id="L241">				children.remove(child);</span>
+<span class="fc" id="L242">				children.add(child1);</span>
 			}
-<span class="nc" id="L244">			value += child1.value() - oldValue;</span>
+<span class="fc" id="L244">			value += child1.value() - oldValue;</span>
 		}
 <span class="fc" id="L246">		return this;</span>
 	}
@@ -251,9 +251,9 @@ class SpawnNode extends Node {
 		// TODO: What if there are no possible spawns?
 <span class="fc" id="L252">		Board board1 = board.spawn();</span>
 <span class="fc bfc" id="L253" title="All 2 branches covered.">		for (Node child : children) {</span>
-<span class="pc bpc" id="L254" title="1 of 2 branches missed.">			if (child.board().equals(board)) {</span>
-<span class="nc" id="L255">				wasNew = false;</span>
-<span class="nc" id="L256">				return child;</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">			if (child.board().equals(board)) {</span>
+<span class="fc" id="L255">				wasNew = false;</span>
+<span class="fc" id="L256">				return child;</span>
 			}
 <span class="fc" id="L258">		}</span>
 		// If we didn't already have a node representing the board, expand a bit
