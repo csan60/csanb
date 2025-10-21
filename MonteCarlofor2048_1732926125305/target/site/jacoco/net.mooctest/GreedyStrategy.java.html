@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GreedyStrategy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MonteCarlofor2048</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">GreedyStrategy.java</span></div><h1>GreedyStrategy.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+
+import net.mooctest.Board;
+import net.mooctest.Measure;
+
+/**
+ * Strategy that tries to greedily maximise a given measure.
+ */
+public class GreedyStrategy implements Strategy {
+
+	private Measure measure;
+<span class="fc" id="L13">	public GreedyStrategy(Measure measure) {</span>
+<span class="fc" id="L14">		this.measure = measure;</span>
+<span class="fc" id="L15">	}</span>
+
+	@Override
+	public Board play(Board board) {
+		while (true) {
+<span class="fc" id="L20">			Board board1 = pickMove(board);</span>
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">			if (board1 == null)</span>
+<span class="fc" id="L22">				break;</span>
+<span class="nc" id="L23">			board = board1;</span>
+<span class="nc" id="L24">			board.unsafe_spawn();</span>
+<span class="nc" id="L25">		}</span>
+<span class="fc" id="L26">		return board;</span>
+	}
+
+	Board pickMove(Board board) {
+<span class="fc" id="L30">		Board best = null;</span>
+<span class="fc" id="L31">		double bestS = -Double.MAX_VALUE;</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">		for (int move : Board.moves) {</span>
+<span class="fc" id="L33">			Board board1 = board.move(move);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">			if (board1.changed) {</span>
+<span class="fc" id="L35">				double s = measure.score(board1);</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">				if (s &gt;= bestS) {</span>
+<span class="fc" id="L37">					best = board1;</span>
+<span class="fc" id="L38">					bestS = s;</span>
+				}
+			}
+		}
+<span class="fc" id="L42">		return best;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UCTStrategy.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MonteCarlofor2048</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">UCTStrategy.java</span></div><h1>UCTStrategy.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
+import net.mooctest.Board;
+import net.mooctest.Measure;
+
+public class UCTStrategy implements Strategy {
+
+	static Measure rolloutMeasure;
+	static Strategy rolloutStrategy;
+
+	private int expands;
+	private boolean verbose;
+
+<span class="fc" id="L19">	public UCTStrategy(int expands, boolean verbose, Measure rolloutMeasure, Strategy rolloutStrategy) {</span>
+<span class="fc" id="L20">		this.expands = expands;</span>
+<span class="fc" id="L21">		this.verbose = verbose;</span>
+<span class="fc" id="L22">		UCTStrategy.rolloutMeasure = rolloutMeasure;</span>
+<span class="fc" id="L23">		UCTStrategy.rolloutStrategy = rolloutStrategy;</span>
+<span class="fc" id="L24">	}</span>
+
+	@Override
+	public Board play(Board board) {
+<span class="fc" id="L28">		Node node = new ChoiceLeaf(board);</span>
+//		int k = 0;
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">		while (!node.board().isStuck()) {</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">			for (int i = 0; i &lt; expands; i++) {</span>
+<span class="nc" id="L32">				node = node.expand();</span>
+			}
+<span class="nc bnc" id="L34" title="All 2 branches missed.">			if (verbose) {</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">				for (Node child : ((ChoiceNode)node).children) {</span>
+<span class="nc" id="L36">					System.out.println((child.value()/child.visits())+&quot; / &quot;+child.visits());</span>
+<span class="nc" id="L37">				}</span>
+			}
+
+			// Play the best move
+<span class="nc" id="L41">			node = node.select(false);</span>
+//			if (verbose) {
+//				System.out.println(k++ +&quot; &quot;+node.value()/(node.visits()+1));
+//			}
+//			node.board().print();
+			// Play a random move
+<span class="nc" id="L47">			node = node.select(false);</span>
+
+<span class="nc bnc" id="L49" title="All 2 branches missed.">			if (verbose) {</span>
+<span class="nc" id="L50">				node.board().print();</span>
+			}
+		}
+<span class="fc" id="L53">		return node.board();</span>
+	}
+}
+
+abstract class Node {
+	/**
+	 * Expands some path.
+	 *
+	 * @return The expanded node
+	 */
+	abstract Node expand();
+
+	/**
+	 * Select a child for expanding or moving.
+	 *
+	 * @param explore Whether an exploration bonus should be included.
+	 * @return The most interesting child.
+	 */
+	abstract Node select(boolean explore);
+
+<span class="fc" id="L73">	int visits = 0;</span>
+<span class="fc" id="L74">	double value = 0;</span>
+	Board board;
+
+<span class="fc" id="L77">	Node(Board board) {</span>
+<span class="fc" id="L78">		this.board = board;</span>
+<span class="fc" id="L79">	}</span>
+
+	/**
+	 * @return The number of calls to expand.
+	 */
+	int visits() {
+<span class="fc" id="L85">		return visits;</span>
+	}
+
+	/**
+	 * @return The reward that has been generated yet by visiting this node.
+	 */
+	double value() {
+<span class="fc" id="L92">		return value;</span>
+	}
+
+	/**
+	 * @return The current board wrapped by the node.
+	 */
+	Board board() {
+<span class="fc" id="L99">		return board;</span>
+	}
+}
+
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">class ChoiceNode extends Node {</span>
+	List&lt;Node&gt; children;
+<span class="fc" id="L105">	private Random rand = ThreadLocalRandom.current();</span>
+	private final static double C = 1;
+	private double leafValue;
+
+	public ChoiceNode(Board board, double leafValue, List&lt;Node&gt; children) {
+<span class="fc" id="L110">		super(board);</span>
+<span class="fc" id="L111">		this.children = children;</span>
+<span class="pc bpc" id="L112" title="2 of 4 branches missed.">		assert !children.isEmpty();</span>
+
+<span class="fc" id="L114">		value = leafValue;</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">		for (Node child : children) {</span>
+<span class="fc" id="L116">			value += child.value();</span>
+<span class="fc" id="L117">		}</span>
+<span class="fc" id="L118">		visits = 1 + children.size();</span>
+
+<span class="fc" id="L120">		this.leafValue = leafValue;</span>
+<span class="fc" id="L121">	}</span>
+
+	@Override
+	public Node expand() {
+<span class="fc" id="L125">		Node node = select(true);</span>
+<span class="fc" id="L126">		double oldValue = node.value();</span>
+
+<span class="fc" id="L128">		Node node1 = node.expand();</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">		if (node != node1) {</span>
+<span class="nc" id="L130">			children.remove(node);</span>
+<span class="nc" id="L131">			children.add(node1);</span>
+		}
+
+<span class="fc" id="L134">		visits += 1;</span>
+<span class="fc" id="L135">		value += node1.value() - oldValue;</span>
+
+<span class="fc" id="L137">		return this;</span>
+	}
+
+	@Override
+	public Node select(boolean explore) {
+<span class="fc" id="L142">		Node selected = null;</span>
+<span class="fc" id="L143">		double bestValue = -Double.MAX_VALUE;</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		for (Node c : children) {</span>
+<span class="fc" id="L145">			double uctValue = c.value()/(c.visits()+1);</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">			if (explore) {</span>
+
+<span class="fc" id="L148">				uctValue += C * leafValue * Math.sqrt(Math.log(visits() + 1)/(c.visits() + 1));</span>
+<span class="fc" id="L149">				uctValue += rand.nextDouble()*1e-6;</span>
+//				System.err.println(C * Math.sqrt(Math.log(visits() + 1)/(c.visits() + 1)));
+			}
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">			if (uctValue &gt;= bestValue) {</span>
+<span class="fc" id="L153">				selected = c;</span>
+<span class="fc" id="L154">				bestValue = uctValue;</span>
+			}
+<span class="fc" id="L156">		}</span>
+<span class="pc bpc" id="L157" title="2 of 4 branches missed.">		assert selected != null;</span>
+<span class="fc" id="L158">		return selected;</span>
+	}
+}
+
+class ExitNode extends Node {
+	private double leafValue;
+	public ExitNode(Board board, double leafValue) {
+<span class="fc" id="L165">		super(board);</span>
+<span class="fc" id="L166">		visits = 1;</span>
+<span class="fc" id="L167">		value = leafValue;</span>
+<span class="fc" id="L168">		this.leafValue = leafValue;</span>
+<span class="fc" id="L169">	}</span>
+
+	@Override
+	public Node expand() {
+<span class="nc" id="L173">		visits += 1;</span>
+<span class="nc" id="L174">		value += leafValue;</span>
+<span class="nc" id="L175">		return this;</span>
+	}
+
+	@Override
+	public Node select(boolean explore) {
+<span class="fc" id="L180">		throw new UnsupportedOperationException();</span>
+//		Alternatively, return null to signal no children
+	}
+}
+
+class ChoiceLeaf extends Node {
+	public ChoiceLeaf(Board board) {
+<span class="fc" id="L187">		super(board);</span>
+<span class="fc" id="L188">		visits = 1;</span>
+<span class="fc" id="L189">		value = UCTStrategy.rolloutMeasure.score(</span>
+<span class="fc" id="L190">				UCTStrategy.rolloutStrategy.play(board));</span>
+<span class="fc" id="L191">	}</span>
+
+	@Override
+	public Node expand() {
+<span class="fc" id="L195">		List&lt;Node&gt; children = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">		for (int move : Board.moves) {</span>
+<span class="fc" id="L197">			Board board1 = board().move(move);</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">			if (board1.changed) {</span>
+<span class="nc" id="L199">				children.add(new SpawnNode(board1));</span>
+			}
+		}
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">		if (children.isEmpty()) {</span>
+<span class="fc" id="L203">			return new ExitNode(board(), value());</span>
+		}
+<span class="nc" id="L205">		return new ChoiceNode(board(), value(), children);</span>
+	}
+
+	@Override
+	public Node select(boolean explore) {
+<span class="fc" id="L210">		throw new UnsupportedOperationException();</span>
+		// Perhaps just return a random action?
+	}
+}
+
+class SpawnNode extends Node {
+<span class="nc" id="L216">	private List&lt;Node&gt; children = new ArrayList&lt;&gt;();</span>
+
+	/**
+	 * True iff the last call to select spawned a new child
+	 */
+	private boolean wasNew;
+
+	public SpawnNode(Board board) {
+<span class="nc" id="L224">		super(board);</span>
+<span class="nc" id="L225">		visits = 1;</span>
+		// We have to spawn before we play-out, as the Strategies expect to start with a choice
+<span class="nc" id="L227">		value = UCTStrategy.rolloutMeasure.score(</span>
+<span class="nc" id="L228">				UCTStrategy.rolloutStrategy.play(board.spawn()));</span>
+<span class="nc" id="L229">	}</span>
+
+	@Override
+	public Node expand() {
+<span class="nc" id="L233">		visits += 1;</span>
+<span class="nc" id="L234">		Node child = select(true);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">		if (wasNew) {</span>
+<span class="nc" id="L236">			value += child.value();</span>
+		} else {
+<span class="nc" id="L238">			double oldValue = child.value();</span>
+<span class="nc" id="L239">			Node child1 = child.expand();</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">			if (child != child1) {</span>
+<span class="nc" id="L241">				children.remove(child);</span>
+<span class="nc" id="L242">				children.add(child1);</span>
+			}
+<span class="nc" id="L244">			value += child1.value() - oldValue;</span>
+		}
+<span class="nc" id="L246">		return this;</span>
+	}
+
+	@Override
+	Node select(boolean explore) {
+		// TODO: What if there are no possible spawns?
+<span class="nc" id="L252">		Board board1 = board.spawn();</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">		for (Node child : children) {</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">			if (child.board().equals(board)) {</span>
+<span class="nc" id="L255">				wasNew = false;</span>
+<span class="nc" id="L256">				return child;</span>
+			}
+<span class="nc" id="L258">		}</span>
+		// If we didn't already have a node representing the board, expand a bit
+<span class="nc" id="L260">		Node child = new ChoiceLeaf(board1);</span>
+<span class="nc" id="L261">		children.add(child);</span>
+<span class="nc" id="L262">		wasNew = true;</span>
+<span class="nc" id="L263">		return child;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
