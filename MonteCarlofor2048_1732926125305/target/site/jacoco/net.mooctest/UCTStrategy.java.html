@@ -31,7 +31,7 @@ public class UCTStrategy implements Strategy {
 <span class="fc bfc" id="L31" title="All 2 branches covered.">			for (int i = 0; i &lt; expands; i++) {</span>
 <span class="fc" id="L32">				node = node.expand();</span>
 			}
-<span class="pc bpc" id="L34" title="1 of 2 branches missed.">			if (verbose) {</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">			if (verbose) {</span>
 <span class="fc bfc" id="L35" title="All 2 branches covered.">				for (Node child : ((ChoiceNode)node).children) {</span>
 <span class="fc" id="L36">					System.out.println((child.value()/child.visits())+&quot; / &quot;+child.visits());</span>
 <span class="fc" id="L37">				}</span>
@@ -46,7 +46,7 @@ public class UCTStrategy implements Strategy {
 			// Play a random move
 <span class="fc" id="L47">			node = node.select(false);</span>
 
-<span class="pc bpc" id="L49" title="1 of 2 branches missed.">			if (verbose) {</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">			if (verbose) {</span>
 <span class="fc" id="L50">				node.board().print();</span>
 			}
 		}

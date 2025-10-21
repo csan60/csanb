@@ -812,4 +812,126 @@ public class MonteCarloforTest {
         Board res = uct.play(b.copy());
         assertTrue(res.isStuck());
     }
+
+    // ====== 进一步提升 Board / BitBoards / UCTStrategy 分支与变异覆盖 ======
+
+    @Test
+    public void testBoardEqualsNullAndSelf() {
+        // 目的：覆盖equals的null与自反性分支
+        Board b = makeBoard(
+                1,0,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        assertFalse(b.equals(null));
+        assertTrue(b.equals(b));
+    }
+
+    @Test
+    public void testBoardMergeAcrossZerosToMerge() {
+        // 目的：覆盖“穿过空格后再合并”的路径：行 [1,0,1,0] 右移 => [0,0,0,2]
+        int[] cells = new int[16];
+        cells[12] = 1; cells[13] = 0; cells[14] = 1; cells[15] = 0;
+        Board b = makeBoard(cells);
+        Board moved = b.move(Board.RIGHT);
+        assertTrue(moved.changed);
+        assertEquals(0, moved.grid[Board.all[12]]);
+        assertEquals(0, moved.grid[Board.all[13]]);
+        assertEquals(0, moved.grid[Board.all[14]]);
+        assertEquals(2, moved.grid[Board.all[15]]);
+    }
+
+    @Test
+    public void testBoardRightTwoPairsMerge() {
+        // 目的：覆盖“已合并格不可再次合并”的路径：行 [1,1,2,2] 右移 => [0,0,2,3]
+        int[] cells = new int[16];
+        cells[12] = 1; cells[13] = 1; cells[14] = 2; cells[15] = 2;
+        Board b = makeBoard(cells);
+        Board moved = b.move(Board.RIGHT);
+        assertTrue(moved.changed);
+        assertEquals(0, moved.grid[Board.all[12]]);
+        assertEquals(0, moved.grid[Board.all[13]]);
+        assertEquals(2, moved.grid[Board.all[14]]);
+        assertEquals(3, moved.grid[Board.all[15]]);
+    }
+
+    @Test
+    public void testBoardCanDirectionZeroNeighborAndEqualNeighbor() {
+        // 目的：分别触发canDirection的两个条件分支
+        // 情况一：相邻为空 => true
+        Board b1 = makeBoard(
+                1,0,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        assertTrue(b1.canDirection(Board.RIGHT));
+        // 情况二：相邻相等 => true
+        Board b2 = makeBoard(
+                1,1,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        assertTrue(b2.canDirection(Board.RIGHT));
+    }
+
+    @Test
+    public void testBitBoardsMoveSwitchAllCasesAndIdempotentRight() {
+        // 目的：覆盖move函数的全部case，并验证右移幂等
+        long x = makeBitBoard(
+                0,0,0,0,
+                0,0,0,0,
+                1,0,1,0,
+                0,0,0,0
+        );
+        long r1 = BitBoards.move(x, BitBoards.RIGHT);
+        long r2 = BitBoards.move_right(x);
+        assertEquals(r2, r1);
+        // 再次右移应不再变化
+        assertEquals(r1, BitBoards.move_right(r1));
+        // 覆盖其余case
+        assertEquals(BitBoards.move_up(x), BitBoards.move(x, BitBoards.UP));
+        assertEquals(BitBoards.move_down(x), BitBoards.move(x, BitBoards.DOWN));
+        assertEquals(BitBoards.move_left(x), BitBoards.move(x, BitBoards.LEFT));
+    }
+
+    @Test
+    public void testBitBoardsSpawnNewTileValue() {
+        // 目的：验证spawn新增的nibble值只可能为1或2
+        long x = makeBitBoard(
+                1,0,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        long y = BitBoards.spawn(x);
+        // 找到差异位
+        int diff = 0; long val = 0;
+        for (int i = 0; i < 16; i++) {
+            long a = (x >>> (i*4)) & 0xF;
+            long b = (y >>> (i*4)) & 0xF;
+            if (a != b) { diff++; val = b; }
+        }
+        assertEquals(1, diff);
+        assertTrue(val == 1 || val == 2);
+    }
+
+    @Test
+    public void testUCTStrategyPlayNonVerboseSingleExpand() {
+        // 目的：非verbose分支下进行一次迭代，确保选择与扩展流程运行
+        Board b = makeBoard(
+                0,0,0,0,
+                0,0,0,0,
+                1,1,0,0,
+                0,0,0,0
+        );
+        UCTStrategy uct = new UCTStrategy(1, false, new ZeroMeasure(), new Strategy() {
+            @Override public Board play(Board board) { return board; }
+        });
+        Board res = uct.play(b.copy());
+        // 运行后应仍为合法棋盘
+        assertNotNull(res);
+    }
 }
