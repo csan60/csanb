@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BitBoards.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MonteCarlofor2048</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">BitBoards.java</span></div><h1>BitBoards.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.Random;
+
+/**
+ * Format:
+ * [63-60][59-56][55-52][51-48]
+ * [47-44][43-40][39-36][35-32]
+ * [31-28][27-24][23-20][19-16]
+ * [15-12][11- 8][ 7- 4][ 3- 0]
+ */
+
+<span class="nc" id="L13">public class BitBoards {</span>
+<span class="fc" id="L14">	private static Random rand = new Random();</span>
+
+	public final static int UP = 0;
+	public final static int RIGHT = 1;
+	public final static int DOWN = 2;
+	public final static int LEFT = 3;
+<span class="fc" id="L20">	public final static int moves[] = { UP, RIGHT, DOWN, LEFT };</span>
+
+<span class="fc" id="L22">	private final static short[] move_table = new short[0x10000];</span>
+
+	static {
+<span class="fc" id="L25">		Board board = new Board();</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">		for (int row = 0; row &lt;= 0xffff; row++) {</span>
+<span class="fc" id="L27">			board.grid()[Board.all[0]] = row &amp; 0xf;</span>
+<span class="fc" id="L28">			board.grid()[Board.all[1]] = row &gt;&gt;&gt; 4 &amp; 0xf;</span>
+<span class="fc" id="L29">			board.grid()[Board.all[2]] = row &gt;&gt;&gt; 8 &amp; 0xf;</span>
+<span class="fc" id="L30">			board.grid()[Board.all[3]] = row &gt;&gt;&gt; 12 &amp; 0xf;</span>
+<span class="fc" id="L31">			board = board.move(Board.RIGHT);</span>
+<span class="fc" id="L32">			short out = (short)board.grid()[Board.all[0]];</span>
+<span class="fc" id="L33">			out |= (short)board.grid()[Board.all[1]] &lt;&lt; 4;</span>
+<span class="fc" id="L34">			out |= (short)board.grid()[Board.all[2]] &lt;&lt; 8;</span>
+<span class="fc" id="L35">			out |= (short)board.grid()[Board.all[3]] &lt;&lt; 12;</span>
+<span class="fc" id="L36">			move_table[row] = out;</span>
+		}
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * Transposes the board, one diagonal at the time.
+	 */
+	public static long trans(long board) {
+<span class="fc" id="L44">		long res = 0;</span>
+<span class="fc" id="L45">		res |= board &lt;&lt;  4*9 &amp; 0x000f000000000000L;</span>
+<span class="fc" id="L46">		res |= board &lt;&lt;  4*6 &amp; 0x00f0000f00000000L;</span>
+<span class="fc" id="L47">		res |= board &lt;&lt;  4*3 &amp; 0x0f0000f0000f0000L;</span>
+<span class="fc" id="L48">		res |= board         &amp; 0xf0000f0000f0000fL;</span>
+<span class="fc" id="L49">		res |= board &gt;&gt;&gt; 4*3 &amp; 0x0000f0000f0000f0L;</span>
+<span class="fc" id="L50">		res |= board &gt;&gt;&gt; 4*6 &amp; 0x00000000f0000f00L;</span>
+<span class="fc" id="L51">		res |= board &gt;&gt;&gt; 4*9 &amp; 0x000000000000f000L;</span>
+<span class="fc" id="L52">		return res;</span>
+	}
+
+	/**
+	 * Reverses the board along the row axis.
+	 */
+	public static long reverse(long board) {
+<span class="fc" id="L59">		board = (board &lt;&lt; 8 &amp; 0xff00ff00ff00ff00L)</span>
+				| (board &gt;&gt;&gt; 8 &amp; 0x00ff00ff00ff00ffL);
+<span class="fc" id="L61">		board = (board &lt;&lt; 4 &amp; 0xf0f0f0f0f0f0f0f0L)</span>
+				| (board &gt;&gt;&gt; 4 &amp; 0x0f0f0f0f0f0f0f0fL);
+<span class="fc" id="L63">		return board;</span>
+	}
+
+	/**
+	 * Isolates the row'th row, moves it with the move_table, and shifts it
+	 * back.
+	 */
+	public static long move_row_right(long board, int row) {
+<span class="fc" id="L71">		int b = (int)(board &gt;&gt;&gt; 16*row) &amp; 0xffff;</span>
+		// move_table is a short[], so to avoid sign issues, we need to and with 0xffff
+<span class="fc" id="L73">		board = (long)move_table[b] &amp; 0xffff;</span>
+<span class="fc" id="L74">		return board &lt;&lt; 16*row;</span>
+	}
+
+	public static long move_up(long board) {
+<span class="fc" id="L78">		return trans(move_left(trans(board)));</span>
+	}
+
+	public static long move_right(long board) {
+<span class="fc" id="L82">		return move_row_right(board, 0)</span>
+<span class="fc" id="L83">				| move_row_right(board, 1)</span>
+<span class="fc" id="L84">				| move_row_right(board, 2)</span>
+<span class="fc" id="L85">				| move_row_right(board, 3);</span>
+	}
+
+	public static long move_down(long board) {
+<span class="fc" id="L89">		return trans(move_right(trans(board)));</span>
+	}
+
+	public static long move_left(long board) {
+<span class="fc" id="L93">		return reverse(move_right(reverse(board)));</span>
+	}
+
+	public static long move(long board, int move) {
+<span class="fc bfc" id="L97" title="All 5 branches covered.">		switch (move) {</span>
+		case UP:
+<span class="fc" id="L99">			return move_up(board);</span>
+		case RIGHT:
+<span class="fc" id="L101">			return move_right(board);</span>
+		case DOWN:
+<span class="fc" id="L103">			return move_down(board);</span>
+		case LEFT:
+<span class="fc" id="L105">			return move_left(board);</span>
+		default:
+<span class="fc" id="L107">			return 0;</span>
+		}
+	}
+
+	public static int frees(long b) {
+<span class="fc" id="L112">		int free = 0;</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">		while (b != 0) {</span>
+<span class="fc" id="L114">			free += ~(b | b&gt;&gt;&gt;1 | b&gt;&gt;&gt;2 | b&gt;&gt;&gt;3) &amp; 1;</span>
+<span class="fc" id="L115">			b &gt;&gt;&gt;= 4;</span>
+		}
+<span class="fc" id="L117">		return free;</span>
+	}
+
+	public static long spawn(long board) {
+		// asserts there is a free spot
+<span class="fc" id="L122">		int p = rand.nextInt(frees(board));</span>
+<span class="fc" id="L123">		int i = 0;</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">		while (p != -1) {</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">			if ((board &gt;&gt;&gt; i*4 &amp; 0xf) == 0)</span>
+<span class="fc" id="L126">				p--;</span>
+<span class="fc" id="L127">			i++;</span>
+		}
+<span class="fc" id="L129">		return board | pickRandomly() &lt;&lt; 4*(i-1);</span>
+	}
+
+	public static long pickRandomly() {
+<span class="fc bfc" id="L133" title="All 2 branches covered.">		return rand.nextInt(10) == 0 ? 2 : 1;</span>
+	}
+
+	/**
+	 * Not a very performant way of doing this.
+	 */
+	public static boolean isStuck(long board) {
+<span class="fc" id="L140">		boolean res = false;</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">		for (int move = 0; move &lt; 4; move++) {</span>
+<span class="fc" id="L142">			res |= canDirection(board, move);</span>
+		}
+<span class="fc" id="L144">		return res;</span>
+	}
+
+	public static boolean canDirection(long board, int move) {
+<span class="fc bfc" id="L148" title="All 2 branches covered.">		return move(board, move) != board;</span>
+	}
+
+	public static void print(long board) {
+<span class="fc bfc" id="L152" title="All 2 branches covered.">		for (int i = 0; i &lt; 16; i++) {</span>
+<span class="fc" id="L153">			long val = board &gt;&gt;&gt; 4*i &amp; 0xf;</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">			if (val == 0)</span>
+<span class="fc" id="L155">				System.out.print(&quot; .&quot;);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">			if (val &gt; 0)</span>
+<span class="fc" id="L157">				System.out.print(&quot; &quot; + val);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">			if ((i+1) % 4 == 0)</span>
+<span class="fc" id="L159">				System.out.println();</span>
+		}
+<span class="fc" id="L161">		System.out.println();</span>
+<span class="fc" id="L162">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
