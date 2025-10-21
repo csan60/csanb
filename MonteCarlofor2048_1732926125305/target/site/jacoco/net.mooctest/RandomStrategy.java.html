@@ -29,12 +29,12 @@ public class RandomStrategy implements Strategy {
 	public int pickMove() {
 <span class="fc" id="L30">		double cul = 0;</span>
 <span class="fc" id="L31">		double r = rand.nextDouble();</span>
-<span class="pc bpc" id="L32" title="1 of 2 branches missed.">		for (int i = 0; i &lt; chances.length; i++) {</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">		for (int i = 0; i &lt; chances.length; i++) {</span>
 <span class="fc" id="L33">			cul += chances[i];</span>
-<span class="pc bpc" id="L34" title="1 of 2 branches missed.">			if (r &lt; cul)</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">			if (r &lt; cul)</span>
 <span class="fc" id="L35">				return i;</span>
 		}
-<span class="nc" id="L37">		throw new InvalidParameterException(&quot;Check chances sum to 1&quot;);</span>
+<span class="fc" id="L37">		throw new InvalidParameterException(&quot;Check chances sum to 1&quot;);</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

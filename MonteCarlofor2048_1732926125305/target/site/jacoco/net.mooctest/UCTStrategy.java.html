@@ -170,9 +170,9 @@ class ExitNode extends Node {
 
 	@Override
 	public Node expand() {
-<span class="nc" id="L173">		visits += 1;</span>
-<span class="nc" id="L174">		value += leafValue;</span>
-<span class="nc" id="L175">		return this;</span>
+<span class="fc" id="L173">		visits += 1;</span>
+<span class="fc" id="L174">		value += leafValue;</span>
+<span class="fc" id="L175">		return this;</span>
 	}
 
 	@Override
@@ -195,14 +195,14 @@ class ChoiceLeaf extends Node {
 <span class="fc" id="L195">		List&lt;Node&gt; children = new ArrayList&lt;&gt;();</span>
 <span class="fc bfc" id="L196" title="All 2 branches covered.">		for (int move : Board.moves) {</span>
 <span class="fc" id="L197">			Board board1 = board().move(move);</span>
-<span class="pc bpc" id="L198" title="1 of 2 branches missed.">			if (board1.changed) {</span>
-<span class="nc" id="L199">				children.add(new SpawnNode(board1));</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">			if (board1.changed) {</span>
+<span class="fc" id="L199">				children.add(new SpawnNode(board1));</span>
 			}
 		}
-<span class="pc bpc" id="L202" title="1 of 2 branches missed.">		if (children.isEmpty()) {</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">		if (children.isEmpty()) {</span>
 <span class="fc" id="L203">			return new ExitNode(board(), value());</span>
 		}
-<span class="nc" id="L205">		return new ChoiceNode(board(), value(), children);</span>
+<span class="fc" id="L205">		return new ChoiceNode(board(), value(), children);</span>
 	}
 
 	@Override
@@ -213,7 +213,7 @@ class ChoiceLeaf extends Node {
 }
 
 class SpawnNode extends Node {
-<span class="nc" id="L216">	private List&lt;Node&gt; children = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L216">	private List&lt;Node&gt; children = new ArrayList&lt;&gt;();</span>
 
 	/**
 	 * True iff the last call to select spawned a new child
@@ -221,19 +221,19 @@ class SpawnNode extends Node {
 	private boolean wasNew;
 
 	public SpawnNode(Board board) {
-<span class="nc" id="L224">		super(board);</span>
-<span class="nc" id="L225">		visits = 1;</span>
+<span class="fc" id="L224">		super(board);</span>
+<span class="fc" id="L225">		visits = 1;</span>
 		// We have to spawn before we play-out, as the Strategies expect to start with a choice
-<span class="nc" id="L227">		value = UCTStrategy.rolloutMeasure.score(</span>
-<span class="nc" id="L228">				UCTStrategy.rolloutStrategy.play(board.spawn()));</span>
-<span class="nc" id="L229">	}</span>
+<span class="fc" id="L227">		value = UCTStrategy.rolloutMeasure.score(</span>
+<span class="fc" id="L228">				UCTStrategy.rolloutStrategy.play(board.spawn()));</span>
+<span class="fc" id="L229">	}</span>
 
 	@Override
 	public Node expand() {
-<span class="nc" id="L233">		visits += 1;</span>
-<span class="nc" id="L234">		Node child = select(true);</span>
-<span class="nc bnc" id="L235" title="All 2 branches missed.">		if (wasNew) {</span>
-<span class="nc" id="L236">			value += child.value();</span>
+<span class="fc" id="L233">		visits += 1;</span>
+<span class="fc" id="L234">		Node child = select(true);</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">		if (wasNew) {</span>
+<span class="fc" id="L236">			value += child.value();</span>
 		} else {
 <span class="nc" id="L238">			double oldValue = child.value();</span>
 <span class="nc" id="L239">			Node child1 = child.expand();</span>
@@ -243,24 +243,24 @@ class SpawnNode extends Node {
 			}
 <span class="nc" id="L244">			value += child1.value() - oldValue;</span>
 		}
-<span class="nc" id="L246">		return this;</span>
+<span class="fc" id="L246">		return this;</span>
 	}
 
 	@Override
 	Node select(boolean explore) {
 		// TODO: What if there are no possible spawns?
-<span class="nc" id="L252">		Board board1 = board.spawn();</span>
-<span class="nc bnc" id="L253" title="All 2 branches missed.">		for (Node child : children) {</span>
-<span class="nc bnc" id="L254" title="All 2 branches missed.">			if (child.board().equals(board)) {</span>
+<span class="fc" id="L252">		Board board1 = board.spawn();</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">		for (Node child : children) {</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">			if (child.board().equals(board)) {</span>
 <span class="nc" id="L255">				wasNew = false;</span>
 <span class="nc" id="L256">				return child;</span>
 			}
-<span class="nc" id="L258">		}</span>
+<span class="fc" id="L258">		}</span>
 		// If we didn't already have a node representing the board, expand a bit
-<span class="nc" id="L260">		Node child = new ChoiceLeaf(board1);</span>
-<span class="nc" id="L261">		children.add(child);</span>
-<span class="nc" id="L262">		wasNew = true;</span>
-<span class="nc" id="L263">		return child;</span>
+<span class="fc" id="L260">		Node child = new ChoiceLeaf(board1);</span>
+<span class="fc" id="L261">		children.add(child);</span>
+<span class="fc" id="L262">		wasNew = true;</span>
+<span class="fc" id="L263">		return child;</span>
 	}
 
 }

@@ -492,4 +492,186 @@ public class MonteCarloforTest {
         Board res = uct.play(stuck);
         assertEquals(stuck, res);
     }
+
+    // ========== 额外分支与性能相关测试，提升覆盖 ==========
+
+    @Test
+    public void testBoardMoveUpMergeBranch() {
+        // 目的：验证向上合并分支
+        // 第一列 [1,1,0,0] 上移 => 顶部为2
+        Board b = makeBoard(
+                1,0,0,0,
+                1,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        Board moved = b.move(Board.UP);
+        assertTrue(moved.changed);
+        assertEquals(2, moved.grid[Board.all[0]]);
+        assertEquals(0, moved.grid[Board.all[4]]);
+    }
+
+    @Test
+    public void testBoardMoveNoChangeFlag() {
+        // 目的：验证当移动不产生变化时，changed应为false
+        // 行 [1,0,0,0] 向左 => 不变
+        Board b = makeBoard(
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                1,0,0,0
+        );
+        Board moved = b.move(Board.LEFT);
+        assertFalse(moved.changed);
+    }
+
+    @Test
+    public void testBoardCanDirectionOnFullWithMerge() {
+        // 目的：满盘但含有可合并对时，canDirection应为true，isStuck为false
+        Board b = makeBoard(
+                1,1,2,3,
+                4,5,6,7,
+                8,9,10,11,
+                12,13,14,15
+        );
+        assertTrue(b.isFull());
+        assertFalse(b.isStuck());
+        assertTrue(b.canDirection(Board.RIGHT));
+        assertTrue(b.canDirection(Board.LEFT));
+    }
+
+    @Test
+    public void testBoardPickRandomlyBothValuesLikely() {
+        // 目的：多次采样以覆盖pickRandomly的两个分支（1和2），并限制循环次数以保障效率
+        Board b = new Board();
+        boolean seen1 = false, seen2 = false;
+        for (int i = 0; i < 500; i++) {
+            int v = b.pickRandomly();
+            assertTrue(v == 1 || v == 2);
+            if (v == 1) seen1 = true; else if (v == 2) seen2 = true;
+            if (seen1 && seen2) break;
+        }
+        assertTrue("应至少观察到一次1", seen1);
+        // 观测到2的概率为0.1，多次尝试后大概率覆盖到该分支
+        // 若极小概率未观察到，也不影响功能正确性
+    }
+
+    @Test
+    public void testBoardPrintAndBitBoardsPrint() {
+        // 目的：调用print以覆盖打印分支（0与>0）
+        Board b = makeBoard(
+                1,0,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        b.print();
+        long x = makeBitBoard(
+                1,0,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        BitBoards.print(x);
+    }
+
+    @Test
+    public void testBitBoardsMoveUpDownConsistency() {
+        // 目的：验证move_up与move_down的相互关系
+        long x = makeBitBoard(
+                0,0,0,0,
+                0,0,0,0,
+                1,0,0,0,
+                1,0,0,0
+        );
+        long up = BitBoards.move_up(x);
+        long down = BitBoards.move_down(up);
+        // 再向下应可回到某种稳定状态（不一定等于原x），但这里验证连续移动不会产生异常（非零）
+        assertNotEquals(0L, up);
+        assertNotEquals(0L, down);
+    }
+
+    @Test
+    public void testBitBoardsFreesFullIsZero() {
+        // 目的：满盘无空位
+        long full = makeBitBoard(
+                1,2,3,4,
+                5,6,7,8,
+                9,10,11,12,
+                13,14,15,1
+        );
+        assertEquals(0, BitBoards.frees(full));
+    }
+
+    @Test(expected = InvalidParameterException.class)
+    public void testRandomStrategyPickMoveZeroSumThrows() {
+        // 目的：概率全为0时，pickMove应抛出异常
+        RandomStrategy rs = new RandomStrategy(0.0, 0.0, 0.0, 0.0);
+        rs.pickMove();
+    }
+
+    @Test
+    public void testChoiceLeafExpandToChoiceWhenMovesAvailable() {
+        // 目的：当存在可行动作时，ChoiceLeaf.expand返回ChoiceNode
+        new UCTStrategy(0, false, new ZeroMeasure(), new Strategy() {
+            @Override public Board play(Board board) { return board; }
+        });
+        Board b = makeBoard(
+                1,1,0,0,
+                0,0,0,0,
+                0,0,0,0,
+                0,0,0,0
+        );
+        ChoiceLeaf leaf = new ChoiceLeaf(b);
+        Node n = leaf.expand();
+        assertTrue(n instanceof ChoiceNode);
+    }
+
+    @Test
+    public void testChoiceNodeSelectWithExplorePrefersLessVisited() {
+        // 目的：开启探索项时，选择访问次数更少的子节点
+        Board b = new Board();
+        List<Node> children = new ArrayList<>();
+        children.add(new TestNode(b, 0.0, 10));
+        children.add(new TestNode(b, 0.0, 0));
+        ChoiceNode cn = new ChoiceNode(b, 1.0, children);
+        Node sel = cn.select(true);
+        assertSame(children.get(1), sel);
+    }
+
+    @Test
+    public void testExitNodeExpandIncrements() {
+        // 目的：ExitNode.expand每次访问均累加
+        ExitNode e = new ExitNode(new Board(), 2.5);
+        int v0 = e.visits();
+        double s0 = e.value();
+        e.expand();
+        assertEquals(v0 + 1, e.visits());
+        assertEquals(s0 + 2.5, e.value(), 1e-9);
+    }
+
+    @Test
+    public void testSpawnNodeSelectAndExpand() {
+        // 目的：覆盖SpawnNode.select与expand中新建子节点分支
+        new UCTStrategy(0, false, new ZeroMeasure(), new Strategy() {
+            @Override public Board play(Board board) { return board; }
+        });
+        // 保证只有一个空位，spawn位置唯一，消除随机性
+        Board b = makeBoard(
+                1,2,3,4,
+                5,6,7,8,
+                9,10,11,12,
+                13,14,15,0
+        );
+        SpawnNode sn = new SpawnNode(b);
+        assertEquals(1, sn.visits());
+        double s0 = sn.value();
+        Node child = sn.select(true);
+        assertTrue(child instanceof ChoiceLeaf);
+        // expand一次：由于是新节点，value应加上child.value（此处为0）且访问+1
+        sn.expand();
+        assertEquals(2, sn.visits());
+        assertEquals(s0, sn.value(), 1e-9);
+    }
+
 }

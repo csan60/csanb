@@ -149,16 +149,16 @@ import java.util.Random;
 	}
 
 	public static void print(long board) {
-<span class="nc bnc" id="L152" title="All 2 branches missed.">		for (int i = 0; i &lt; 16; i++) {</span>
-<span class="nc" id="L153">			long val = board &gt;&gt;&gt; 4*i &amp; 0xf;</span>
-<span class="nc bnc" id="L154" title="All 2 branches missed.">			if (val == 0)</span>
-<span class="nc" id="L155">				System.out.print(&quot; .&quot;);</span>
-<span class="nc bnc" id="L156" title="All 2 branches missed.">			if (val &gt; 0)</span>
-<span class="nc" id="L157">				System.out.print(&quot; &quot; + val);</span>
-<span class="nc bnc" id="L158" title="All 2 branches missed.">			if ((i+1) % 4 == 0)</span>
-<span class="nc" id="L159">				System.out.println();</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">		for (int i = 0; i &lt; 16; i++) {</span>
+<span class="fc" id="L153">			long val = board &gt;&gt;&gt; 4*i &amp; 0xf;</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">			if (val == 0)</span>
+<span class="fc" id="L155">				System.out.print(&quot; .&quot;);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">			if (val &gt; 0)</span>
+<span class="fc" id="L157">				System.out.print(&quot; &quot; + val);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">			if ((i+1) % 4 == 0)</span>
+<span class="fc" id="L159">				System.out.println();</span>
 		}
-<span class="nc" id="L161">		System.out.println();</span>
-<span class="nc" id="L162">	}</span>
+<span class="fc" id="L161">		System.out.println();</span>
+<span class="fc" id="L162">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
