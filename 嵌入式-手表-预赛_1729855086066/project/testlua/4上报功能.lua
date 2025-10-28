@@ -181,8 +181,8 @@ end
 function entry()
   ask("ok", { msg = "请在手表上点击“开始运动”按钮，随后保持运动状态。" })
 
-  clear("upper")
-  clear("senser")
+  clear(channels.upper)
+  clear(channels.senser)
   etimer.delay(300)
 
   send_basic_profile()
@@ -200,8 +200,8 @@ function entry()
     manual_report_confirmation(expectedCalorie)
   end
 
-  clear("upper")
-  clear("senser")
+  clear(channels.upper)
+  clear(channels.senser)
   etimer.delay(500)
 
   print("✅ 上报功能验证结束。")

@@ -111,7 +111,7 @@ local function send_and_verify(caseIndex, payload, expected)
 end
 
 function entry()
-  clear("upper")
+  clear(channels.upper)
   etimer.delay(200)
 
   local baseSeconds = calc_current_seconds()
@@ -167,7 +167,7 @@ function entry()
     send_and_verify(index, payload, expected)
   end
 
-  clear("upper")
+  clear(channels.upper)
   etimer.delay(400)
 
   exit()
