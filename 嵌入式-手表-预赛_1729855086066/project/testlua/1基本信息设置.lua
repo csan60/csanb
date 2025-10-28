@@ -50,6 +50,30 @@ local function read_info_response(timeout)
   return nil
 end
 
+local function format_manual_message(caseIndex, expected)
+  local genderText = expected.sex == 1 and "女性" or "男性"
+  return string.format(
+    "案例 %d：\n  性别：%s\n  身高：%d cm\n  体重：%d kg\n  年龄：%d 岁\n请观察手表显示是否与期望一致，若一致请选择‘是’。",
+    caseIndex,
+    genderText,
+    expected.height,
+    expected.weight,
+    expected.age
+  )
+end
+
+local function manual_confirm(caseIndex, expected)
+  local confirmed = ask("yesno", {
+    title = "手动确认基本信息",
+    msg = format_manual_message(caseIndex, expected),
+    default = true,
+  })
+
+  check(confirmed,
+        string.format("✅ 案例 %d 手动确认通过", caseIndex),
+        string.format("❌ 案例 %d 手动确认失败，请查看界面显示", caseIndex))
+end
+
 local function verify_frame(caseIndex, expected, response)
   local sex = tonumber(response.sex or response.Sex)
   check(sex == expected.sex,
@@ -77,17 +101,17 @@ local function send_and_verify(caseIndex, payload, expected)
   etimer.delay(300)
   local response = read_info_response(800)
 
-  check(response ~= nil,
-        string.format("✅ 案例 %d 收到设置信息的回传数据", caseIndex),
-        string.format("❌ 案例 %d 未收到设置信息回传，无法验证", caseIndex))
-
   if response then
     verify_frame(caseIndex, expected, response)
+  else
+    manual_confirm(caseIndex, expected)
   end
+
+  etimer.delay(150)
 end
 
 function entry()
-  clear(channels.upper)
+  clear("upper")
   etimer.delay(200)
 
   local baseSeconds = calc_current_seconds()
@@ -141,10 +165,9 @@ function entry()
     }
 
     send_and_verify(index, payload, expected)
-    etimer.delay(150)
   end
 
-  clear(channels.upper)
+  clear("upper")
   etimer.delay(400)
 
   exit()

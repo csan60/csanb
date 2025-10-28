@@ -149,21 +149,40 @@ local function validate_report(report, expectedCalorie)
   local duration = tonumber(report.working_time or report.duration)
   local calorie = tonumber(report.Calorie or report.calorie)
 
-  check(duration ~= nil and duration > 0,
-        string.format("✅ 运动时长输出合理：%.0f 秒", duration or -1),
-        string.format("❌ 运动时长输出异常，期望得到正值，实际 %s", tostring(report.working_time)))
+  if duration and duration > 0 then
+    check(true,
+          string.format("✅ 运动时长输出合理：%.0f 秒", duration),
+          "")
+  else
+    check(false,
+          "",
+          string.format("❌ 运动时长输出异常，期望得到正值，实际 %s", tostring(report.working_time)))
+  end
 
-  local tolerance = math.max(0.1 * expectedCalorie, 5)
-  check(calorie ~= nil and math.abs(calorie - expectedCalorie) <= tolerance,
-        string.format("✅ 卡路里累计正确：%.2f", calorie or -1),
-        string.format("❌ 卡路里累计偏差过大，期望 %.2f±%.2f，实际 %s", expectedCalorie, tolerance, tostring(report.Calorie)))
+  if calorie then
+    local tolerance = math.max(0.1 * expectedCalorie, 5)
+    local diff = math.abs(calorie - expectedCalorie)
+    if diff <= tolerance then
+      check(true,
+            string.format("✅ 卡路里累计正确：%.2f", calorie),
+            "")
+    else
+      check(false,
+            "",
+            string.format("❌ 卡路里累计偏差过大，期望 %.2f±%.2f，实际 %.2f", expectedCalorie, tolerance, calorie))
+    end
+  else
+    check(false,
+          "",
+          "❌ 无法解析卡路里字段")
+  end
 end
 
 function entry()
   ask("ok", { msg = "请在手表上点击“开始运动”按钮，随后保持运动状态。" })
 
-  clear(channels.upper)
-  clear(channels.senser)
+  clear("upper")
+  clear("senser")
   etimer.delay(300)
 
   send_basic_profile()
@@ -181,8 +200,8 @@ function entry()
     manual_report_confirmation(expectedCalorie)
   end
 
-  clear(channels.upper)
-  clear(channels.senser)
+  clear("upper")
+  clear("senser")
   etimer.delay(500)
 
   print("✅ 上报功能验证结束。")
