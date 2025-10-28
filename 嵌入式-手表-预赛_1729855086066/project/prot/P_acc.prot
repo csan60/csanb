@@ -1,0 +1,93 @@
+{
+    "version": 4,
+    "data": {
+        "kind": "protocol",
+        "alignment": "right",
+        "title": "加速度",
+        "items": [
+            {
+                "id": "N6x6UvwsY",
+                "kind": "seg_integer",
+                "name": "header",
+                "title": "包头",
+                "autoValue": "0xFF55",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "true",
+                "encode": "complement"
+            },
+            {
+                "id": "2mGW852hVd",
+                "kind": "seg_integer",
+                "name": "len",
+                "title": "数据长度",
+                "autoValue": "0xC",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "hFpsSZuFS",
+                "kind": "seg_real",
+                "name": "acc_x",
+                "title": "x方向加速度",
+                "autoValue": "0",
+                "double": "false",
+                "bigOrder": "true",
+                "option": {}
+            },
+            {
+                "id": "CH9uPvuf/Ml)-_L.HAcP",
+                "kind": "seg_real",
+                "name": "acc_y",
+                "title": "y方向加速度",
+                "autoValue": "0",
+                "double": "false",
+                "bigOrder": "true"
+            },
+            {
+                "id": "8UEN:ED$BTUiwe_teE$Q",
+                "kind": "seg_real",
+                "name": "acc_z",
+                "title": "z方向加速度",
+                "autoValue": "0",
+                "double": "false",
+                "bigOrder": "true"
+            },
+            {
+                "id": "Z}h~gF9S@t.7HmsN9wYo",
+                "kind": "seg_integer",
+                "name": "check_num",
+                "title": "校验和",
+                "autoValue": "CheckCode(SUM_8_O8,this.len,this.acc_z)",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "wXbRsfn-V",
+                "kind": "seg_integer",
+                "name": "tail",
+                "title": "包尾",
+                "autoValue": "0xFF55",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "true",
+                "encode": "complement"
+            },
+            {
+                "id": "4omLwYir2HNJc4y?GL,j",
+                "kind": "seg_integer",
+                "name": "int_xxx",
+                "title": "名称",
+                "autoValue": "0x0",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            }
+        ]
+    }
+}

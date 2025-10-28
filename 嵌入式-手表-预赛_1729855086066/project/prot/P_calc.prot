@@ -1,0 +1,75 @@
+{
+    "version": 4,
+    "data": {
+        "kind": "protocol",
+        "alignment": "right",
+        "title": "信息上报",
+        "items": [
+            {
+                "id": "N6x6UvwsY",
+                "kind": "seg_integer",
+                "name": "header",
+                "title": "包头",
+                "autoValue": "0xFF55",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "true",
+                "encode": "complement"
+            },
+            {
+                "id": "2mGW852hVd",
+                "kind": "seg_integer",
+                "name": "len",
+                "title": "数据长度",
+                "autoValue": "0x8",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "J(o%H|nU:uv91.UW01@w",
+                "kind": "seg_integer",
+                "name": "level",
+                "title": "运动时长",
+                "autoValue": "0x0",
+                "signed": "false",
+                "bitCount": "32",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "Qm0bHNH97",
+                "kind": "seg_real",
+                "name": "calorie",
+                "title": "消耗卡路里",
+                "autoValue": "0",
+                "double": "false",
+                "bigOrder": "false",
+                "option": {}
+            },
+            {
+                "id": "Z}h~gF9S@t.7HmsN9wYo",
+                "kind": "seg_integer",
+                "name": "check_code",
+                "title": "校验和",
+                "autoValue": "CheckCode(SUM_8_O8,this.len,this.calorie)",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "wXbRsfn-V",
+                "kind": "seg_integer",
+                "name": "tail",
+                "title": "包尾",
+                "autoValue": "0xFF55",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "true",
+                "encode": "complement"
+            }
+        ]
+    }
+}

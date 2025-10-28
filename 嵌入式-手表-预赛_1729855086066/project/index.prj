@@ -1,0 +1,25 @@
+{
+    "version": 4,
+    "data": {
+        "ui": {
+            "theme": "light",
+            "entry": "",
+            "entryRun": "",
+            "menuConfig": "",
+            "viewSize": [
+                800,
+                600
+            ],
+            "logAdd": "",
+            "title": "ETest Player",
+            "fullScreen": false
+        },
+        "outputPath": "",
+        "prot": {
+            "packLua": "",
+            "unPackLua": "",
+            "checkLua": "",
+            "parseCbLua": ""
+        }
+    }
+}

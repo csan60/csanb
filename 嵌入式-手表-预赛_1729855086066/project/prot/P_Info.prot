@@ -1,0 +1,110 @@
+{
+    "version": 4,
+    "data": {
+        "kind": "protocol",
+        "alignment": "right",
+        "title": "基本信息",
+        "items": [
+            {
+                "id": "N6x6UvwsY",
+                "kind": "seg_integer",
+                "name": "header",
+                "title": "包头",
+                "autoValue": "0xFF55",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "true",
+                "encode": "complement"
+            },
+            {
+                "id": "gt6TlED5ug",
+                "kind": "seg_integer",
+                "name": "len",
+                "title": "数据长度",
+                "autoValue": "0xA",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "J5vkoHVVJn",
+                "kind": "seg_integer",
+                "name": "currentSecends",
+                "title": "当前时间",
+                "autoValue": "0x0",
+                "signed": "false",
+                "bitCount": "48",
+                "bigOrder": "true",
+                "encode": "complement"
+            },
+            {
+                "id": "Z}h~gF9S@t.7HmsN9wYo",
+                "kind": "seg_integer",
+                "name": "sex",
+                "title": "性别",
+                "autoValue": "0xA",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "e^vLeb3f`!eJ[ZoA?BZ%",
+                "kind": "seg_integer",
+                "name": "height",
+                "title": "身高",
+                "autoValue": "0xA",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "_a%z0`21%U7Y5T2_J:%E",
+                "kind": "seg_integer",
+                "name": "weight",
+                "title": "体重",
+                "autoValue": "0xA",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "536bOq=5_-d:it*3CYhg",
+                "kind": "seg_integer",
+                "name": "age",
+                "title": "年龄",
+                "autoValue": "0xA",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "lngc@_xWh6URTb(xJ1;N",
+                "kind": "seg_integer",
+                "name": "check_code",
+                "title": "校验和",
+                "autoValue": "CheckCode(SUM_8_O8,this.len,this.age)",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "wXbRsfn-V",
+                "kind": "seg_integer",
+                "name": "tail",
+                "title": "包尾",
+                "autoValue": "0xFF55",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "true",
+                "encode": "complement",
+                "option": {}
+            }
+        ]
+    }
+}

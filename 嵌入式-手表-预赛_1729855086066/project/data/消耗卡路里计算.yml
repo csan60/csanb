@@ -1,0 +1,29 @@
+info:
+  # 男性正常值
+  - gender: 2
+    age: 20
+    height: 170
+    weight: 70
+  # 男性边界值
+  - gender: 2
+    age: 0
+    height: 0
+    weight: 0
+  - gender: 2
+    age: 100
+    height: 200
+    weight: 150
+  # 女性正常值
+  - gender: 1
+    age: 25
+    height: 160
+    weight: 55
+  # 女性边界值
+  - gender: 1
+    age: 0
+    height: 0
+    weight: 0
+  - gender: 1
+    age: 100
+    height: 200
+    weight: 150

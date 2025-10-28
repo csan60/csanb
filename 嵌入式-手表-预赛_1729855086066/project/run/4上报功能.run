@@ -1,0 +1,88 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "env/智能手表仿真环境.env",
+        "title": "信息上报",
+        "remarks": "",
+        "testCode": "",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "9dwii_lWKSATgDdDQ-ajQ",
+                "name": "传感器仿真",
+                "kind": "SIMU"
+            },
+            {
+                "id": "g4vfZvuWlG6TDSNDF8ktA",
+                "name": "上位机仿真",
+                "luaVal": "testlua/4上报功能.lua",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "vqGqZRlA9nwpTmriqmGb4",
+                "name": "传感器仿真",
+                "items": [
+                    {
+                        "name": "senser",
+                        "checked": false
+                    }
+                ]
+            },
+            {
+                "id": "_pgEOzqEvGAAVvhMej-TS",
+                "name": "上位机仿真",
+                "items": [
+                    {
+                        "name": "upper",
+                        "checked": true
+                    }
+                ]
+            },
+            {
+                "id": "kOUd885uBguZLxyYeBbS5",
+                "name": "实物设备",
+                "items": [
+                    {
+                        "name": "UDP",
+                        "checked": false
+                    },
+                    {
+                        "name": "com_speed",
+                        "checked": false
+                    },
+                    {
+                        "name": "com_GPS",
+                        "checked": false
+                    },
+                    {
+                        "name": "com_upper",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "P_Info",
+                "uri": "prot/P_Info.prot",
+                "checked": false
+            },
+            {
+                "name": "P_acc",
+                "uri": "prot/P_acc.prot",
+                "checked": false
+            },
+            {
+                "name": "P_calc",
+                "uri": "prot/P_calc.prot"
+            },
+            {
+                "name": "P_report",
+                "uri": "prot/P_report.prot",
+                "checked": false
+            }
+        ]
+    }
+}

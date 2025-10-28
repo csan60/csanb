@@ -1,0 +1,86 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "env/智能手表仿真环境.env",
+        "title": "设置基本信息",
+        "remarks": "",
+        "testCode": "",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "JKwjeiR492RP3YBcpkYgw",
+                "name": "传感器仿真",
+                "kind": "SIMU"
+            },
+            {
+                "id": "VY-ua6_LxoxHCSm_LdARZ",
+                "name": "上位机仿真",
+                "luaVal": "testlua/1基本信息设置.lua",
+                "yamlVal": "data/基本信息设置.yml",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "Wbh63fecwIw_mQkDMbNBk",
+                "name": "传感器仿真",
+                "items": [
+                    {
+                        "name": "senser",
+                        "checked": false
+                    }
+                ]
+            },
+            {
+                "id": "k4inoBrh-61N5w4qa6PGn",
+                "name": "上位机仿真",
+                "items": [
+                    {
+                        "name": "upper",
+                        "checked": false
+                    }
+                ]
+            },
+            {
+                "id": "lf5SbD5wF9isOTBSYCyrJ",
+                "name": "实物设备",
+                "items": [
+                    {
+                        "name": "UDP",
+                        "checked": false
+                    },
+                    {
+                        "name": "com_speed",
+                        "checked": false
+                    },
+                    {
+                        "name": "com_GPS",
+                        "checked": false
+                    },
+                    {
+                        "name": "com_upper",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "P_Info",
+                "uri": "prot/P_Info.prot"
+            },
+            {
+                "name": "P_acc",
+                "uri": "prot/P_acc.prot"
+            },
+            {
+                "name": "P_calc",
+                "uri": "prot/P_calc.prot"
+            },
+            {
+                "name": "P_report",
+                "uri": "prot/P_report.prot"
+            }
+        ]
+    }
+}
