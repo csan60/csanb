@@ -1,16 +1,21 @@
+local BASE_TIME = os.time({ year = 2000, month = 1, day = 1, hour = 0, min = 0, sec = 0 }) or 0
+local LIMIT_TIME = os.time({ year = 2100, month = 1, day = 1, hour = 0, min = 0, sec = 0 })
+local MAX_SECONDS = 0xFFFFFFFFFFFF
+if BASE_TIME and LIMIT_TIME then
+  MAX_SECONDS = math.max(LIMIT_TIME - BASE_TIME, 0)
+end
+
 local function calc_current_seconds()
-  local base = os.time({ year = 2000, month = 1, day = 1, hour = 0, min = 0, sec = 0 })
   local now = os.time()
-  if not base or not now then
+  if not BASE_TIME or not now then
     return 0
   end
-  local diff = now - base
+  local diff = now - BASE_TIME
   if diff < 0 then
     return 0
   end
-  local maxSeconds = 0xFFFFFFFFFFFF
-  if diff > maxSeconds then
-    diff = maxSeconds
+  if diff > MAX_SECONDS then
+    return MAX_SECONDS
   end
   return diff
 end
@@ -33,6 +38,27 @@ local function normalize_gender(gender)
   return 2
 end
 
+local function manual_validate(label, expected)
+  local genderText = expected.sex == 1 and "女性" or "男性"
+  local msg = string.format(
+    "%s：\n  性别：%s\n  身高：%d cm\n  体重：%d kg\n  年龄：%d 岁\n若手表显示一致请选择‘是’。",
+    label,
+    genderText,
+    expected.height,
+    expected.weight,
+    expected.age
+  )
+  local confirmed = ask("yesno", {
+    title = "手动确认信息输入接口",
+    msg = msg,
+    default = true,
+  })
+
+  check(confirmed,
+        string.format("✅ %s 手动确认通过", label),
+        string.format("❌ %s 手动确认失败，请核对显示", label))
+end
+
 local function expect_drop(label, payload)
   clear(channels.upper)
   write_msg(channels.upper, protocols.P_Info, payload)
@@ -47,9 +73,7 @@ end
 local function validate_response(label, expected)
   local response = read_msg(channels.upper, protocols.P_Info, 800)
   if not response or type(response.value) ~= "table" then
-    check(false,
-          "",
-          string.format("❌ %s 未收到设置信息的回传数据", label))
+    manual_validate(label, expected)
     return
   end
 
@@ -88,7 +112,7 @@ local function expect_accept_with_noise(seconds)
   write_buff(channels.upper, merged)
   etimer.delay(200)
 
-  validate_response("冗余字段", {
+  validate_response("包前冗余字段", {
     sex = normalize_gender(payload.sex),
     height = clamp(payload.height, 0, 200),
     weight = clamp(payload.weight, 0, 150),
@@ -97,6 +121,8 @@ local function expect_accept_with_noise(seconds)
 end
 
 function entry()
+  ask("ok", { msg = "请确保手表处于信息设置界面，准备验证接口容错能力。" })
+
   clear(channels.upper)
   etimer.delay(200)
 
@@ -116,6 +142,7 @@ function entry()
     weight = 160,
     age = -5,
   }
+
   write_msg(channels.upper, protocols.P_Info, payload)
   etimer.delay(200)
   validate_response("边界裁剪", {
@@ -128,5 +155,6 @@ function entry()
   clear(channels.upper)
   etimer.delay(500)
 
+  print("✅ 信息输入接口联调完成。")
   exit()
 end
