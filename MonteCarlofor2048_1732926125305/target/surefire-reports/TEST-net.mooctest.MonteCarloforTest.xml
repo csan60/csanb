@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="69" failures="0" name="net.mooctest.MonteCarloforTest" time="0.231" errors="0" skipped="0">
+<testsuite tests="69" failures="0" name="net.mooctest.MonteCarloforTest" time="0.204" errors="0" skipped="0">
   <properties>
     <property name="jansi.mode" value="force"/>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
@@ -58,73 +58,73 @@
     <property name="sun.cpu.endian" value="little"/>
     <property name="sun.stdout.encoding" value="UTF-8"/>
   </properties>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testBestMeasure" time="0.08"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testBestMeasure" time="0.066"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testGreedyStrategy" time="0.002"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testRandomStrategyInvalidConstructor" time="0.003"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testRandomStrategyInvalidConstructor" time="0.002"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testHashCodeAndEquals" time="0.008"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testChoiceNodeExpandAndSelect" time="0.002"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testEnsambleMeasure" time="0.014"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testNoSpawnWhenUnchanged" time="0.012"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testKernelWithId" time="0.011"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testGreedyStrategyPlay" time="0.002"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testUnsafeMove" time="0.005"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testChoiceNodeExpandAndSelect" time="0.001"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testEnsambleMeasure" time="0.005"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testNoSpawnWhenUnchanged" time="0.006"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testKernelWithId" time="0.004"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testGreedyStrategyPlay" time="0.006"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testUnsafeMove" time="0.001"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testChoiceNodeSelectTieBreak" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testEmptyBoardMoves" time="0.01"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testSpawnNodeExpandAndSelect" time="0.002"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testEmptyBoardMoves" time="0.009"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testSpawnNodeExpandAndSelect" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testFrees" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testMerge" time="0.001"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testPrint" time="0.001"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testMerge" time="0"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testPrint" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testSpawn" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testTrans" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testExitNodeExpandIncrementsValues" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testCopy" time="0.005"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testMove" time="0.003"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testToString" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testFreesMeasure" time="0.001"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testCopy" time="0.004"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testMove" time="0"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testToString" time="0.001"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testFreesMeasure" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testUCTStrategyPlayReturnsBoard" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testConstructorVariadic" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testNodeAccessors" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testChangedSpawnTrigger" time="0.012"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testChangedSpawnTrigger" time="0.006"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testSmoothnessWithEmptyBoard" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testMonotonicityMeasure" time="0.002"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testPlayExecutesUntilNoMoves" time="0.001"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testCycleLongerThanMoves" time="0.017"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testCanDirection" time="0"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testMonotonicityMeasure" time="0.004"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testPlayExecutesUntilNoMoves" time="0.003"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testCycleLongerThanMoves" time="0.029"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testCanDirection" time="0.002"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testSmoothnessIdVsPowDifference" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testMultiplePlayConsistency" time="0.002"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testZeroMeasure" time="0.002"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testChoiceNodeSelectAndExpand" time="0"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testChoiceNodeSelectAndExpand" time="0.001"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testPickRandomly1" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testCanDirectionAndIsStuck" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testChoiceLeafExpand" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testNodeValueAndVisitsTracking" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testBoardInitialization" time="0.001"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testBoardInitialization" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testChoiceLeafExpandCreatesChoiceNodeOrExitNode" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testSmoothStrategy" time="0.001"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testSmoothStrategy" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testSpawnNodeSelectAndExpand" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testEnsambleMeasureZeroWeights" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testMultiCycle" time="0.007"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testEnsambleMeasureZeroWeights" time="0.004"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testMultiCycle" time="0.004"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testExitNodeExpandAndSelect" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testPlayWithPowKernel" time="0.002"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testExitNodeSelectThrows" time="0.001"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testNegativeMeasure" time="0"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testNegativeMeasure" time="0.005"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testReverse" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testLargeCyclePerformance" time="0.011"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testLargeCyclePerformance" time="0.004"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testSumMeasure" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testPickRandomly" time="0.005"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testPickRandomly" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testMoveRowRight" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testKernelWithInvalidType" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testUCTStrategyVerboseMode" time="0.004"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testUCTStrategyVerboseMode" time="0.011"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testPickMoveReturnsNewBoard" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testSmoothMeasure" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testIsFull" time="0"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testIsFull" time="0.004"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testPickMoveWhenNoChange" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testUCTStrategyBasicPlay" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testRandomStrategyPickMove" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testNoMove" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testIsStuck" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testSmoothnessCalculation" time="0"/>
-  <testcase classname="net.mooctest.MonteCarloforTest" name="testSingleCycle" time="0.001"/>
+  <testcase classname="net.mooctest.MonteCarloforTest" name="testSingleCycle" time="0.005"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testKernelWithPow" time="0"/>
   <testcase classname="net.mooctest.MonteCarloforTest" name="testMoveSwitch" time="0"/>
 </testsuite>
