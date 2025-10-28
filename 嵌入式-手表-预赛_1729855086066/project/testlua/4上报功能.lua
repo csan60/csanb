@@ -1,50 +1,124 @@
+local function calc_current_seconds()
+  local base = os.time({ year = 2000, month = 1, day = 1, hour = 0, min = 0, sec = 0 })
+  local now = os.time()
+  if not base or not now then
+    return 0
+  end
+  local diff = now - base
+  if diff < 0 then
+    return 0
+  end
+  local maxSeconds = 0xFFFFFFFFFFFF
+  if diff > maxSeconds then
+    diff = maxSeconds
+  end
+  return diff
+end
+
+local function send_basic_profile()
+  local payload = {
+    currentSecends = calc_current_seconds(),
+    sex = 2,
+    height = 178,
+    weight = 72,
+    age = 28,
+  }
+  write_msg(channels.upper, protocols.P_Info, payload)
+  etimer.delay(200)
+end
+
+local function replay_motion(durationMs)
+  local pattern = {
+    { acc_x = 15, acc_y = 12, acc_z = 9 },
+    { acc_x = -18, acc_y = 20, acc_z = -12 },
+    { acc_x = 65, acc_y = -55, acc_z = 45 },
+    { acc_x = -40, acc_y = -42, acc_z = 30 },
+    { acc_x = 95, acc_y = 90, acc_z = -85 },
+    { acc_x = -95, acc_y = -88, acc_z = 82 },
+  }
+
+  local base = #pattern * 80
+  local slice = math.floor((durationMs or 0) / base)
+  if slice < 1 then
+    slice = 1
+  end
+
+  for _ = 1, slice do
+    for _, acc in ipairs(pattern) do
+      write_msg(channels.senser, protocols.P_acc, acc)
+      etimer.delay(80)
+    end
+  end
+end
+
+local function provide_calorie_samples(samples)
+  local expectedTotal = 0
+  for _, item in ipairs(samples) do
+    expectedTotal = expectedTotal + item.calorie
+    write_msg(channels.upper, protocols.P_calc, {
+      level = item.level,
+      calorie = item.calorie,
+    })
+    etimer.delay(180)
+  end
+  return expectedTotal
+end
+
+local function wait_for_report(attempts, timeout)
+  attempts = attempts or 5
+  timeout = timeout or 2000
+  for _ = 1, attempts do
+    local response = read_msg(channels.upper, protocols.P_report, timeout)
+    if response and type(response.value) == "table" then
+      return response.value
+    end
+  end
+  return nil
+end
+
+local function validate_report(report, expectedCalorie)
+  local hasReport = report ~= nil
+  check(hasReport, "✅ 收到上报数据", "❌ 未收到任何上报数据")
+  if not hasReport then
+    return
+  end
+
+  local duration = tonumber(report.working_time or report.duration)
+  local calorie = tonumber(report.Calorie or report.calorie)
+
+  check(duration ~= nil and duration > 0,
+        string.format("✅ 运动时长输出合理：%.0f 秒", duration or -1),
+        string.format("❌ 运动时长输出异常，期望得到正值，实际 %s", tostring(report.working_time)))
+
+  local tolerance = math.max(0.1 * expectedCalorie, 5)
+  check(calorie ~= nil and math.abs(calorie - expectedCalorie) <= tolerance,
+        string.format("✅ 卡路里累计正确：%.2f", calorie or -1),
+        string.format("❌ 卡路里累计偏差过大，期望 %.2f±%.2f，实际 %s", expectedCalorie, tolerance, tostring(report.Calorie)))
+end
+
 function entry()
-  print("=== 🚀 开始测试智能手表上报功能 ===")
+  clear(channels.upper)
+  clear(channels.senser)
+  etimer.delay(300)
 
-  ask("ok", { msg = "请点击『停止运动』按钮" })
+  send_basic_profile()
+  replay_motion(6000)
 
-  -- 🧩 调试阶段：打印 read_msg 返回情况
-  print("🧩 等待上报帧 ...")
-  local res = read_msg(channels.upper, protocols.P_report, 5000)
-  print("🧩 read_msg 返回类型:", type(res))
-  print("🧩 read_msg 返回内容:", tostring(res))
+  local calorieSamples = {
+    { level = 1, calorie = 145.35 },
+    { level = 2, calorie = 168.42 },
+    { level = 3, calorie = 198.76 },
+  }
 
-  -- 🧩 Step 1: 判空
-  if res == nil then
-      print("❌ 未接收到上报帧（res 为 nil，可能超时或协议号不对）")
-      exit()
-      return
-  end
+  local expectedCalorie = provide_calorie_samples(calorieSamples)
 
-  -- 🧩 Step 2: 类型校验
-  if type(res) ~= "table" then
-      print("⚠️ 返回值不是表，实际类型为:", type(res))
-      exit()
-      return
-  end
+  etimer.delay(1000)
+  local report = wait_for_report(6, 1500)
+  validate_report(report, expectedCalorie)
 
-  -- 🧩 Step 3: 安全检查 res.value
-  local value = res.value
-  if not value or type(value) ~= "table" then
-      print("⚠️ res.value 不存在或不是表！")
-      print("📦 原始内容:", tostring(res))
-      exit()
-      return
-  end
+  clear(channels.upper)
+  clear(channels.senser)
+  etimer.delay(500)
 
-  -- 🧩 Step 4: 提取字段
-  local duration = tonumber(value.duration) or 0
-  local calorie = tonumber(value.calorie) or 0
-
-  print(string.format("✅ 运动时长: %d 秒", duration))
-  print(string.format("✅ 卡路里: %.2f kcal", calorie))
-
-  if duration == 0 and calorie == 0 then
-      print("⚠️ 数据为 0，可能未正确上报")
-  else
-      print("🎯 上报功能正常")
-  end
-
-  print("=== ✅ 测试结束 ===")
   exit()
 end

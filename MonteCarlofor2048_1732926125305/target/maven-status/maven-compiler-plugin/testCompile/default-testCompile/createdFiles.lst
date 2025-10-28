@@ -1,6 +1,0 @@
-net\mooctest\DummyBoard.class
-net\mooctest\DummyMeasure.class
-net\mooctest\DummyStrategy.class
-net\mooctest\MonteCarloforTest$DummyMeasure.class
-net\mooctest\MonteCarloforTest$DummyStrategy.class
-net\mooctest\MonteCarloforTest.class
