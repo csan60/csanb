@@ -50,55 +50,43 @@ local function read_info_response(timeout)
   return nil
 end
 
-local function format_manual_message(caseIndex, expected)
-  local genderText = expected.sex == 1 and "女性" or "男性"
-  return string.format(
-    "案例 %d：\n  性别：%s\n  身高：%d cm\n  体重：%d kg\n  年龄：%d 岁\n请观察手表显示是否与期望一致，若一致请选择‘是’。",
-    caseIndex,
-    genderText,
-    expected.height,
-    expected.weight,
-    expected.age
-  )
-end
-
-local function manual_confirm(caseIndex, expected)
-  local confirmed = ask("yesno", {
-    title = "手动确认基本信息",
-    msg = format_manual_message(caseIndex, expected),
-    default = true,
-  })
-
-  check(confirmed,
-        string.format("✅ 案例 %d 手动确认通过", caseIndex),
-        string.format("❌ 案例 %d 手动确认失败，请查看界面显示", caseIndex))
-end
-
-local function verify_info_case(caseIndex, expected, result)
-  local sex = tonumber(result.sex or result.Sex)
+local function verify_frame(caseIndex, expected, response)
+  local sex = tonumber(response.sex or response.Sex)
   check(sex == expected.sex,
         string.format("✅ 案例 %d 性别处理正确", caseIndex),
-        string.format("❌ 案例 %d 性别处理错误，期望 %d，实际 %s", caseIndex, expected.sex, tostring(result.sex)))
+        string.format("❌ 案例 %d 性别处理错误，期望 %d，实际 %s", caseIndex, expected.sex, tostring(response.sex)))
 
-  local height = tonumber(result.height or result.Height)
+  local height = tonumber(response.height or response.Height)
   check(height == expected.height,
         string.format("✅ 案例 %d 身高处理正确", caseIndex),
-        string.format("❌ 案例 %d 身高处理错误，期望 %d，实际 %s", caseIndex, expected.height, tostring(result.height)))
+        string.format("❌ 案例 %d 身高处理错误，期望 %d，实际 %s", caseIndex, expected.height, tostring(response.height)))
 
-  local weight = tonumber(result.weight or result.Weight)
+  local weight = tonumber(response.weight or response.Weight)
   check(weight == expected.weight,
         string.format("✅ 案例 %d 体重处理正确", caseIndex),
-        string.format("❌ 案例 %d 体重处理错误，期望 %d，实际 %s", caseIndex, expected.weight, tostring(result.weight)))
+        string.format("❌ 案例 %d 体重处理错误，期望 %d，实际 %s", caseIndex, expected.weight, tostring(response.weight)))
 
-  local age = tonumber(result.age or result.Age)
+  local age = tonumber(response.age or response.Age)
   check(age == expected.age,
         string.format("✅ 案例 %d 年龄处理正确", caseIndex),
-        string.format("❌ 案例 %d 年龄处理错误，期望 %d，实际 %s", caseIndex, expected.age, tostring(result.age)))
+        string.format("❌ 案例 %d 年龄处理错误，期望 %d，实际 %s", caseIndex, expected.age, tostring(response.age)))
+end
+
+local function send_and_verify(caseIndex, payload, expected)
+  write_msg(channels.upper, protocols.P_Info, payload)
+  etimer.delay(300)
+  local response = read_info_response(800)
+
+  check(response ~= nil,
+        string.format("✅ 案例 %d 收到设置信息的回传数据", caseIndex),
+        string.format("❌ 案例 %d 未收到设置信息回传，无法验证", caseIndex))
+
+  if response then
+    verify_frame(caseIndex, expected, response)
+  end
 end
 
 function entry()
-  ask("ok", { msg = "请确保被测手表已进入“基本信息设置”界面，并且运动未开始。" })
-
   clear(channels.upper)
   etimer.delay(200)
 
@@ -107,6 +95,7 @@ function entry()
   local cases = {}
   for _, info in ipairs(test_data.testdata or {}) do
     table.insert(cases, {
+      label = "数据文件案例",
       gender = info.gender,
       height = info.height,
       weight = info.weight,
@@ -116,6 +105,7 @@ function entry()
   end
 
   table.insert(cases, {
+    label = "时间上界裁剪",
     gender = 1,
     height = 165,
     weight = 55,
@@ -124,6 +114,7 @@ function entry()
   })
 
   table.insert(cases, {
+    label = "时间下界裁剪",
     gender = 2,
     height = 175,
     weight = 70,
@@ -149,21 +140,12 @@ function entry()
       age = info.age,
     }
 
-    write_msg(channels.upper, protocols.P_Info, payload)
-    etimer.delay(300)
-
-    local response = read_info_response(800)
-    if response then
-      verify_info_case(index, expected, response)
-    else
-      manual_confirm(index, expected)
-    end
-
-    etimer.delay(200)
+    send_and_verify(index, payload, expected)
+    etimer.delay(150)
   end
 
   clear(channels.upper)
-  etimer.delay(500)
+  etimer.delay(400)
 
   exit()
 end
