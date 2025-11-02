@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Transcript.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-grade-management-system</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">Transcript.java</span></div><h1>Transcript.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Transcript {
+    public static class LineItem {
+        private final String courseCode;
+        private final String courseTitle;
+        private final int creditHours;
+        private final double percentage;
+        private final double gpaPoints;
+
+<span class="fc" id="L15">        public LineItem(String courseCode, String courseTitle, int creditHours, double percentage, double gpaPoints) {</span>
+<span class="fc" id="L16">            this.courseCode = courseCode;</span>
+<span class="fc" id="L17">            this.courseTitle = courseTitle;</span>
+<span class="fc" id="L18">            this.creditHours = creditHours;</span>
+<span class="fc" id="L19">            this.percentage = percentage;</span>
+<span class="fc" id="L20">            this.gpaPoints = gpaPoints;</span>
+<span class="fc" id="L21">        }</span>
+
+<span class="fc" id="L23">        public String getCourseCode() { return courseCode; }</span>
+<span class="fc" id="L24">        public String getCourseTitle() { return courseTitle; }</span>
+<span class="fc" id="L25">        public int getCreditHours() { return creditHours; }</span>
+<span class="fc" id="L26">        public double getPercentage() { return percentage; }</span>
+<span class="fc" id="L27">        public double getGpaPoints() { return gpaPoints; }</span>
+    }
+
+    private final List&lt;LineItem&gt; items;
+
+<span class="fc" id="L32">    public Transcript() {</span>
+<span class="fc" id="L33">        this.items = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L34">    }</span>
+
+    public void addItem(LineItem item) {
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (item == null) throw new ValidationException(&quot;item must not be null&quot;);</span>
+<span class="fc" id="L38">        items.add(item);</span>
+<span class="fc" id="L39">    }</span>
+
+    public List&lt;LineItem&gt; getItems() {
+<span class="fc" id="L42">        return Collections.unmodifiableList(items);</span>
+    }
+
+    public double computeCumulativeGpa() {
+<span class="fc" id="L46">        double totalQualityPoints = 0.0;</span>
+<span class="fc" id="L47">        int totalCredits = 0;</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (LineItem item : items) {</span>
+<span class="fc" id="L49">            totalQualityPoints += item.getGpaPoints() * item.getCreditHours();</span>
+<span class="fc" id="L50">            totalCredits += item.getCreditHours();</span>
+<span class="fc" id="L51">        }</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (totalCredits == 0) return 0.0;</span>
+<span class="fc" id="L53">        return totalQualityPoints / totalCredits;</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

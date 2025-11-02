@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Enrollment.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">student-grade-management-system</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">Enrollment.java</span></div><h1>Enrollment.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
+public class Enrollment {
+    private final String id;
+    private final String studentId;
+    private final String courseId;
+    private final int year;
+    private final Term term;
+    private EnrollmentStatus status;
+    private final Map&lt;GradeComponentType, GradeRecord&gt; gradesByComponent;
+
+<span class="fc" id="L18">    public Enrollment(String studentId, String courseId, int year, Term term) {</span>
+<span class="fc" id="L19">        ValidationUtil.requireNonBlank(studentId, &quot;studentId&quot;);</span>
+<span class="fc" id="L20">        ValidationUtil.requireNonBlank(courseId, &quot;courseId&quot;);</span>
+<span class="fc" id="L21">        ValidationUtil.requirePositive(year, &quot;year&quot;);</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        if (term == null) throw new ValidationException(&quot;term must not be null&quot;);</span>
+<span class="fc" id="L23">        this.id = UUID.randomUUID().toString();</span>
+<span class="fc" id="L24">        this.studentId = studentId;</span>
+<span class="fc" id="L25">        this.courseId = courseId;</span>
+<span class="fc" id="L26">        this.year = year;</span>
+<span class="fc" id="L27">        this.term = term;</span>
+<span class="fc" id="L28">        this.status = EnrollmentStatus.ENROLLED;</span>
+<span class="fc" id="L29">        this.gradesByComponent = new EnumMap&lt;&gt;(GradeComponentType.class);</span>
+<span class="fc" id="L30">    }</span>
+
+<span class="fc" id="L32">    public String getId() { return id; }</span>
+<span class="fc" id="L33">    public String getStudentId() { return studentId; }</span>
+<span class="fc" id="L34">    public String getCourseId() { return courseId; }</span>
+<span class="fc" id="L35">    public int getYear() { return year; }</span>
+<span class="fc" id="L36">    public Term getTerm() { return term; }</span>
+<span class="fc" id="L37">    public EnrollmentStatus getStatus() { return status; }</span>
+
+    public void drop() {
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (status == EnrollmentStatus.COMPLETED) {</span>
+<span class="fc" id="L41">            throw new DomainException(&quot;Cannot drop a completed enrollment&quot;);</span>
+        }
+<span class="fc" id="L43">        status = EnrollmentStatus.DROPPED;</span>
+<span class="fc" id="L44">    }</span>
+
+    public void complete() {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (status == EnrollmentStatus.DROPPED) {</span>
+<span class="fc" id="L48">            throw new DomainException(&quot;Cannot complete a dropped enrollment&quot;);</span>
+        }
+<span class="fc" id="L50">        status = EnrollmentStatus.COMPLETED;</span>
+<span class="fc" id="L51">    }</span>
+
+    public void markIncomplete() {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (status != EnrollmentStatus.ENROLLED) {</span>
+<span class="fc" id="L55">            throw new DomainException(&quot;Incomplete allowed only from ENROLLED state&quot;);</span>
+        }
+<span class="fc" id="L57">        status = EnrollmentStatus.INCOMPLETE;</span>
+<span class="fc" id="L58">    }</span>
+
+    public Map&lt;GradeComponentType, GradeRecord&gt; getGradesByComponent() {
+<span class="fc" id="L61">        return Collections.unmodifiableMap(gradesByComponent);</span>
+    }
+
+    public void recordGrade(GradeRecord record) {
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (status == EnrollmentStatus.DROPPED) {</span>
+<span class="fc" id="L66">            throw new DomainException(&quot;Cannot record grades for dropped enrollment&quot;);</span>
+        }
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (record == null) throw new ValidationException(&quot;record must not be null&quot;);</span>
+<span class="fc" id="L69">        gradesByComponent.put(record.getComponentType(), record);</span>
+<span class="fc" id="L70">    }</span>
+
+    public double getAverageScore(Map&lt;GradeComponentType, GradeComponent&gt; policyComponents) {
+<span class="fc bfc" id="L73" title="All 4 branches covered.">        if (policyComponents == null || policyComponents.isEmpty()) {</span>
+<span class="fc" id="L74">            throw new ValidationException(&quot;policyComponents must not be empty&quot;);</span>
+        }
+<span class="fc" id="L76">        double totalWeight = 0.0;</span>
+<span class="fc" id="L77">        double weightedSum = 0.0;</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        for (Map.Entry&lt;GradeComponentType, GradeComponent&gt; entry : policyComponents.entrySet()) {</span>
+<span class="fc" id="L79">            GradeComponentType type = entry.getKey();</span>
+<span class="fc" id="L80">            GradeComponent component = entry.getValue();</span>
+<span class="fc" id="L81">            double weight = component.getWeight();</span>
+<span class="fc" id="L82">            GradeRecord record = gradesByComponent.get(type);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (record != null) {</span>
+<span class="fc" id="L84">                weightedSum += record.getScore() * weight;</span>
+            }
+<span class="fc" id="L86">            totalWeight += weight;</span>
+<span class="fc" id="L87">        }</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (totalWeight &lt;= 0.0) {</span>
+<span class="fc" id="L89">            throw new ValidationException(&quot;Total weight must be positive&quot;);</span>
+        }
+<span class="fc" id="L91">        return weightedSum / totalWeight;</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (this == o) return true;</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        if (!(o instanceof Enrollment)) return false;</span>
+<span class="fc" id="L98">        Enrollment that = (Enrollment) o;</span>
+<span class="fc" id="L99">        return id.equals(that.id);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L104">        return Objects.hash(id);</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
