@@ -1,0 +1,16 @@
+Frames:
+
+     - temprature: -21
+       expect: -20
+     - temprature: -10
+       expect: -10
+     - temprature: 0
+       expect:  0
+     - temprature: -10.25
+       expect: -10.25
+     - temprature: 20
+       expect: 20
+     - temprature: 50
+       expect: 50
+     - temprature: 50.68
+       expect: 50

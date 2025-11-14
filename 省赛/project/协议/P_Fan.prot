@@ -1,0 +1,87 @@
+{
+    "version": 4,
+    "data": {
+        "kind": "protocol",
+        "alignment": "right",
+        "title": "散热风扇",
+        "items": [
+            {
+                "id": "rgUI81r8A",
+                "kind": "seg_integer",
+                "name": "header",
+                "title": "包头",
+                "autoValue": "0xFFFA",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "true",
+                "encode": "complement"
+            },
+            {
+                "id": "S~~Z$|X?.`Ad7+?l/+Ab",
+                "kind": "seg_integer",
+                "name": "datatype1",
+                "title": "数据类型1",
+                "autoValue": "0x02",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "J7R[{k3qU:CRBAgtw![(",
+                "kind": "seg_integer",
+                "name": "datatype2",
+                "title": "数据类型2",
+                "autoValue": "0x22",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "kQ4phTdd0|ucA`*e`Qb*",
+                "kind": "seg_integer",
+                "name": "datalen",
+                "title": "数据长度",
+                "autoValue": "0x01",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "#}rrv{%^smgIb]`n1=a?",
+                "kind": "seg_integer",
+                "name": "cmd",
+                "title": "操作指令",
+                "autoValue": "0x0",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "7wBCrJvwft",
+                "kind": "seg_integer",
+                "name": "check",
+                "title": "校验和",
+                "autoValue": "CheckCode(SUM_8_O16,this.datatype1,this.cmd)",
+                "signed": "false",
+                "bitCount": "16",
+                "bigOrder": "false",
+                "encode": "complement"
+            },
+            {
+                "id": "ZVR8haDq9T",
+                "kind": "seg_integer",
+                "name": "tail",
+                "title": "包尾",
+                "autoValue": "0x0F",
+                "signed": "false",
+                "bitCount": "8",
+                "bigOrder": "false",
+                "encode": "complement"
+            }
+        ]
+    }
+}

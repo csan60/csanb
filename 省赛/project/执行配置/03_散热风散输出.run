@@ -1,0 +1,57 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "仿真环境.env",
+        "title": "",
+        "remarks": "",
+        "testCode": "",
+        "netvar": "测试数据/03_散热风散输出.yml",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "fgve53Jtyxc2p3o0xRpSC",
+                "name": "仿真设备(脚本)",
+                "luaVal": "测试脚本/03_散热风散输出.lua",
+                "yamlVal": "测试数据/03_散热风散输出.yml",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "QqJsq-b-BhDq1brQwCIBR",
+                "name": "仿真设备(脚本)",
+                "items": [
+                    {
+                        "name": "Sensor",
+                        "checked": false
+                    },
+                    {
+                        "name": "Fan",
+                        "checked": false
+                    },
+                    {
+                        "name": "Heater",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "P_Fan",
+                "uri": "协议/P_Fan.prot",
+                "checked": true
+            },
+            {
+                "name": "P_Heater",
+                "uri": "协议/P_Heater.prot",
+                "checked": true
+            },
+            {
+                "name": "P_Sensor",
+                "uri": "协议/P_Sensor.prot",
+                "checked": true
+            }
+        ]
+    }
+}

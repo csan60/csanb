@@ -1,0 +1,55 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "仿真环境.env",
+        "title": "",
+        "remarks": "",
+        "testCode": "",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "s8F_7lHD4LObvDTvJWwvq",
+                "name": "仿真设备(脚本)",
+                "luaVal": "测试脚本/04_接口温度传感器输入.lua",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "zkLKIo9Tk8lW799gMcF7g",
+                "name": "仿真设备(脚本)",
+                "items": [
+                    {
+                        "name": "Sensor",
+                        "checked": false
+                    },
+                    {
+                        "name": "Fan",
+                        "checked": false
+                    },
+                    {
+                        "name": "Heater",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "P_Fan",
+                "uri": "协议/P_Fan.prot",
+                "checked": true
+            },
+            {
+                "name": "P_Heater",
+                "uri": "协议/P_Heater.prot",
+                "checked": true
+            },
+            {
+                "name": "P_Sensor",
+                "uri": "协议/P_Sensor.prot",
+                "checked": true
+            }
+        ]
+    }
+}
