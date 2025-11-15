@@ -1,0 +1,45 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "env/env.env",
+        "title": "状态机测试",
+        "remarks": "验证系统状态机的正确性，覆盖问题2.2-002, 2.3-001, 2.5-001, 2.6-001",
+        "testCode": "",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "state_machine_test_device",
+                "name": "仿真设备(脚本)",
+                "luaVal": "func/6state_machine_test.lua",
+                "yamlVal": "testdata/data.yml",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "state_machine_test_channels",
+                "name": "仿真设备(脚本)",
+                "items": [
+                    {
+                        "name": "COM_shoot",
+                        "checked": false
+                    },
+                    {
+                        "name": "COM_target",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "target",
+                "uri": "prot/target.prot"
+            },
+            {
+                "name": "shoot",
+                "uri": "prot/shoot.prot"
+            }
+        ]
+    }
+}

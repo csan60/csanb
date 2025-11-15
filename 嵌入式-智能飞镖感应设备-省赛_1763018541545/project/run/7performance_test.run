@@ -1,0 +1,45 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "env/env.env",
+        "title": "成绩评定测试",
+        "remarks": "验证成绩评定的正确性，覆盖问题2.5-002",
+        "testCode": "",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "performance_test_device",
+                "name": "仿真设备(脚本)",
+                "luaVal": "func/7performance_test.lua",
+                "yamlVal": "testdata/data.yml",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "performance_test_channels",
+                "name": "仿真设备(脚本)",
+                "items": [
+                    {
+                        "name": "COM_shoot",
+                        "checked": false
+                    },
+                    {
+                        "name": "COM_target",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "target",
+                "uri": "prot/target.prot"
+            },
+            {
+                "name": "shoot",
+                "uri": "prot/shoot.prot"
+            }
+        ]
+    }
+}

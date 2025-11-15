@@ -1,9 +1,202 @@
+# 飞镖感应设备测试数据配置文件
+# 包含各种测试场景的数据
+
+# 飞镖信息输入测试数据
 shoot: 
+  # 测试用例1: 轻型飞镖 (type=1)
   - type: 1
     number: 10
+  
+  # 测试用例2: 重型飞镖 (type=2)
+  - type: 2
+    number: 5
+  
+  # 测试用例3: 轻型飞镖，大数量
+  - type: 1
+    number: 15
+  
+  # 测试用例4: 特殊飞镖类型 (type=3，如果支持)
+  - type: 3
+    number: 8
 
-
+# 靶区信息接收测试数据
 target: 
+  # 测试用例1: 内牛眼区域 (zone=1，分数最高)
   - zone: 1
+  
+  # 测试用例2: 三倍区 (zone=5)
+  - zone: 5
+  
+  # 测试用例3: 中间区域 (zone=10)
+  - zone: 10
+  
+  # 测试用例4: 外侧区域 (zone=15)
+  - zone: 15
+  
+  # 测试用例5: 边界区域 (zone=20，最大有效值)
+  - zone: 20
 
+# 接口错误测试数据
+interface_errors:
+  # 包头错误测试
+  - error_type: "header_error"
+    header: 0x5511  # 错误的包头，正确应为0xAA55
+    description: "包头错误测试"
+  
+  # 包尾错误测试
+  - error_type: "tail_error"
+    tail: 0xAA55    # 错误的包尾，正确应为0x55AA
+    description: "包尾错误测试"
+  
+  # 数据标志错误测试（shoot协议）
+  - error_type: "data_flag_error"
+    data: 0xCC      # 错误的数据标志，shoot正确应为0xBB
+    description: "数据标志错误测试"
 
+# 边界值测试数据
+boundary_tests:
+  # 有效区域边界
+  - zone: 1         # 最小有效区域
+    valid: true
+  - zone: 20        # 最大有效区域
+    valid: true
+  
+  # 无效区域边界
+  - zone: 0         # 小于最小值
+    valid: false
+  - zone: 21        # 大于最大值
+    valid: false
+  - zone: -1        # 负数测试
+    valid: false
+
+# 得分逻辑测试数据
+scoring_tests:
+  # 轻型飞镖 (type=1) 得分测试
+  - dart_type: 1
+    zone: 1
+    expected_score: 5      # 内牛眼：5分
+    description: "轻镖-内牛眼"
+  
+  - dart_type: 1
+    zone: 2
+    expected_score: 3      # 外牛眼：3分
+    description: "轻镖-外牛眼"
+  
+  - dart_type: 1
+    zone: 3
+    expected_score: 2      # 三倍区：2分
+    description: "轻镖-三倍区"
+  
+  - dart_type: 1
+    zone: 10
+    expected_score: 1      # 普通区：1分
+    description: "轻镖-普通区"
+  
+  # 重型飞镖 (type=2) 得分测试
+  - dart_type: 2
+    zone: 1
+    expected_score: 3      # 内牛眼：3分
+    description: "重镖-内牛眼"
+  
+  - dart_type: 2
+    zone: 2
+    expected_score: 2      # 外牛眼：2分
+    description: "重镖-外牛眼"
+  
+  - dart_type: 2
+    zone: 3
+    expected_score: 2      # 三倍区：2分
+    description: "重镖-三倍区"
+  
+  - dart_type: 2
+    zone: 10
+    expected_score: 1      # 普通区：1分
+    description: "重镖-普通区"
+
+# 状态机测试数据
+state_machine_tests:
+  # 正常状态流转
+  - test_name: "正常流程测试"
+    states:
+      - state: "准备投镖"
+        action: "输入飞镖信息"
+        expected: "接收成功"
+      - state: "准备投镖"
+        action: "点击开始"
+        expected: "进入投镖状态并启动倒计时"
+      - state: "投镖中"
+        action: "接收靶区信息"
+        expected: "记录得分"
+      - state: "投镖结束"
+        action: "显示成绩"
+        expected: "显示统计信息"
+  
+  # 异常状态测试
+  - test_name: "非准备状态输入飞镖"
+    current_state: "投镖结束"
+    action: "输入飞镖信息"
+    expected: "信息应被丢弃"
+    problem_id: "2.2-002"
+  
+  - test_name: "时间结束后仍接收得分"
+    current_state: "倒计时结束"
+    action: "发送靶区信息"
+    expected: "信息应被拒绝"
+    problem_id: "2.5-001"
+  
+  - test_name: "非结束状态点击复位"
+    current_state: "准备投镖"
+    action: "点击复位按钮"
+    expected: "无反应"
+    problem_id: "2.6-001"
+
+# 性能评定测试数据
+performance_tests:
+  # 优秀 (average >= 2.5)
+  - dart_type: 1
+    total_darts: 10
+    total_score: 30
+    average_score: 3.0
+    expected_grade: "优秀"
+  
+  # 良 (2.5 > average >= 2.0)
+  - dart_type: 1
+    total_darts: 10
+    total_score: 20
+    average_score: 2.0
+    expected_grade: "良"
+  
+  # 差 (average < 2.0)
+  - dart_type: 1
+    total_darts: 10
+    total_score: 15
+    average_score: 1.5
+    expected_grade: "差"
+  
+  # 边界值测试：平均2.5分（应为"良"还是"优秀"？）
+  - dart_type: 1
+    total_darts: 10
+    total_score: 25
+    average_score: 2.5
+    expected_grade: "良"
+    note: "边界值测试"
+
+# 异常数据测试
+exception_tests:
+  # 空值测试 (问题2.2-003)
+  - test_name: "飞镖数量为nil"
+    dart_type: 1
+    dart_number: null
+    expected: "默认处理或错误提示，不应崩溃"
+    problem_id: "2.2-003"
+  
+  # 非法值测试
+  - test_name: "飞镖类型非法"
+    dart_type: 99
+    dart_number: 10
+    expected: "应拒绝或使用默认值"
+  
+  - test_name: "飞镖数量为负数"
+    dart_type: 1
+    dart_number: -5
+    expected: "应拒绝或使用默认值"

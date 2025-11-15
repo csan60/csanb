@@ -1,0 +1,45 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "env/env.env",
+        "title": "异常数据处理测试",
+        "remarks": "验证系统对异常数据的处理能力，覆盖问题2.2-003, 3.1-001, 3.2-001",
+        "testCode": "",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "exception_test_device",
+                "name": "仿真设备(脚本)",
+                "luaVal": "func/8exception_test.lua",
+                "yamlVal": "testdata/data.yml",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "exception_test_channels",
+                "name": "仿真设备(脚本)",
+                "items": [
+                    {
+                        "name": "COM_shoot",
+                        "checked": false
+                    },
+                    {
+                        "name": "COM_target",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "target",
+                "uri": "prot/target.prot"
+            },
+            {
+                "name": "shoot",
+                "uri": "prot/shoot.prot"
+            }
+        ]
+    }
+}
