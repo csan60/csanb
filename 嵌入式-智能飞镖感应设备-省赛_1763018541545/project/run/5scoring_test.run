@@ -1,0 +1,45 @@
+{
+    "version": 4,
+    "data": {
+        "envValue": "env/env.env",
+        "title": "得分逻辑测试",
+        "remarks": "验证不同飞镖类型和区域的得分计算是否正确，覆盖问题2.4-001和2.4-002",
+        "testCode": "",
+        "config": {},
+        "deviceList": [
+            {
+                "id": "scoring_test_device",
+                "name": "仿真设备(脚本)",
+                "luaVal": "func/5scoring_test.lua",
+                "yamlVal": "testdata/data.yml",
+                "kind": "SIMU"
+            }
+        ],
+        "channelList": [
+            {
+                "id": "scoring_test_channels",
+                "name": "仿真设备(脚本)",
+                "items": [
+                    {
+                        "name": "COM_shoot",
+                        "checked": false
+                    },
+                    {
+                        "name": "COM_target",
+                        "checked": false
+                    }
+                ]
+            }
+        ],
+        "protocolList": [
+            {
+                "name": "target",
+                "uri": "prot/target.prot"
+            },
+            {
+                "name": "shoot",
+                "uri": "prot/shoot.prot"
+            }
+        ]
+    }
+}
