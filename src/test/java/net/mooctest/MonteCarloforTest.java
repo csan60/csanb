@@ -472,6 +472,22 @@ public class BudgetTest {
     }
 
     /**
+     * 测试概率为0时所有风险都不会触发。
+     */
+    @Test
+    public void testRiskAnalyzerNoRisksTrigger() {
+        RiskAnalyzer analyzer = new RiskAnalyzer();
+        List<Risk> risks = Arrays.asList(
+            new Risk("None", "LOW", 0.0, 5.0),
+            new Risk("None2", "LOW", 0.0, 6.0)
+        );
+        RiskAnalyzer.SimulationResult result = analyzer.simulate(risks, 3);
+        assertEquals(0.0, result.getMeanImpact(), 1e-12);
+        assertEquals(0.0, result.getP90Impact(), 1e-12);
+        assertEquals(0.0, result.getWorstCaseImpact(), 1e-12);
+    }
+
+    /**
      * 自行重放Xorshift53序列以还原模拟路径，保证外部验证。
      */
     private double[] computeScenariosDeterministically(List<Risk> risks, int iterations) {
@@ -1343,6 +1359,296 @@ public class BudgetTest {
         } catch (DomainException e) {
             assertEquals("test throw", e.getMessage());
         }
+    }
+
+    // ==================== 额外边界与变异测试 ====================
+
+    /**
+     * 测试Budget在极小成本下的储备金逻辑。
+     */
+    @Test
+    public void testBudgetReserveAtMinimum() {
+        Budget b = new Budget();
+        b.add(new Budget.Item("Cheap", 50.0, 0.1, "MISC"));
+        b.setReserveRatio(0.5);
+        double reserve = b.requiredReserve();
+        assertTrue("储备金应不低于最小值1000", reserve >= 1000.0);
+    }
+
+    /**
+     * 验证Budget空列表时各统计方法返回0。
+     */
+    @Test
+    public void testBudgetEmptyTotals() {
+        Budget empty = new Budget();
+        assertEquals(0.0, empty.totalCost(), 0.0001);
+        assertEquals(0.0, empty.totalValue(), 0.0001);
+    }
+
+    /**
+     * 测试Task的依赖集合返回副本不影响原集合。
+     */
+    @Test
+    public void testTaskDependenciesImmutable() {
+        Task t1 = new Task("A", 5, Task.Priority.HIGH);
+        Task t2 = new Task("B", 3, Task.Priority.MEDIUM);
+        t1.addDependency(t2);
+        java.util.Set<Task> deps = t1.getDependencies();
+        deps.clear();
+        assertEquals(1, t1.getDependencies().size());
+    }
+
+    /**
+     * 验证Risk得分边界值0.25和0.5的优先级分配。
+     */
+    @Test
+    public void testRiskPriorityExactBoundary() {
+        Risk r1 = new Risk("At025", "CAT", 1.0, 0.25);
+        assertEquals(2, r1.priority());
+        Risk r2 = new Risk("At05", "CAT", 0.5, 1.0);
+        assertEquals(3, r2.priority());
+        Risk r3 = new Risk("Below025", "CAT", 0.24, 1.0);
+        assertEquals(1, r3.priority());
+    }
+
+    /**
+     * 测试Risk裁剪函数的精确边界。
+     */
+    @Test
+    public void testRiskClampExactBounds() {
+        Risk r = new Risk("Test", "CAT", 0.5, 0.5);
+        assertEquals(0.0, r.clamp(0.0), 1e-12);
+        assertEquals(1.0, r.clamp(1.0), 1e-12);
+        assertEquals(0.5, r.clamp(0.5), 1e-12);
+    }
+
+    /**
+     * 确认Researcher容量释放不会超过40的上限。
+     */
+    @Test
+    public void testResearcherReleaseCapAtLimit() {
+        Researcher r = new Researcher("Test", 40);
+        r.releaseHours(10);
+        assertEquals(40, r.getCapacity());
+    }
+
+    /**
+     * 验证Researcher评分在极端值下的裁剪。
+     */
+    @Test
+    public void testResearcherRatingExtremes() {
+        Researcher r = new Researcher("Test", 10);
+        r.updateRating(0.0);
+        assertEquals(0.0, r.getRating(), 0.0001);
+        r.updateRating(100.0);
+        assertEquals(30.0, r.getRating(), 0.0001);
+    }
+
+    /**
+     * 测试Resource预定时段完全重叠的情况。
+     */
+    @Test
+    public void testResourceBookingOverlap() {
+        Resource res = new Resource("Test", "TYPE");
+        LocalDateTime start1 = LocalDateTime.of(2024, 1, 1, 9, 0);
+        LocalDateTime end1 = LocalDateTime.of(2024, 1, 1, 12, 0);
+        LocalDateTime start2 = LocalDateTime.of(2024, 1, 1, 10, 0);
+        LocalDateTime end2 = LocalDateTime.of(2024, 1, 1, 11, 0);
+        assertTrue(res.book(start1, end1));
+        assertFalse(res.book(start2, end2));
+    }
+
+    /**
+     * 验证IdGenerator生成的ID均为非负数。
+     */
+    @Test
+    public void testIdGeneratorAlwaysPositive() {
+        for (int i = 0; i < 10; i++) {
+            long id = IdGenerator.nextId();
+            assertTrue("ID必须非负", id >= 0);
+        }
+    }
+
+    /**
+     * 测试GraphUtils在单个任务时的路径长度。
+     */
+    @Test
+    public void testGraphUtilsSingleTask() {
+        Task single = new Task("Single", 7, Task.Priority.HIGH);
+        assertEquals(7, GraphUtils.longestPathDuration(Arrays.asList(single)));
+    }
+
+    /**
+     * 验证Scheduler对单任务无依赖的调度。
+     */
+    @Test
+    public void testSchedulerSingleTask() {
+        Task t = new Task("Solo", 5, Task.Priority.MEDIUM);
+        Scheduler scheduler = new Scheduler();
+        scheduler.schedule(Arrays.asList(t));
+        assertEquals(0, t.getEst());
+        assertEquals(5, t.getEft());
+    }
+
+    /**
+     * 测试MatchingEngine对空研究者列表的处理。
+     */
+    @Test
+    public void testMatchingEngineEmptyResearchers() {
+        MatchingEngine engine = new MatchingEngine();
+        Task t = new Task("Task", 5, Task.Priority.HIGH);
+        List<MatchingEngine.Assignment> assignments = engine.match(
+            Arrays.asList(),
+            Arrays.asList(t)
+        );
+        assertEquals(0, assignments.size());
+    }
+
+    /**
+     * 测试MatchingEngine对空任务列表的处理。
+     */
+    @Test
+    public void testMatchingEngineEmptyTasks() {
+        MatchingEngine engine = new MatchingEngine();
+        Researcher r = new Researcher("Test", 10);
+        List<MatchingEngine.Assignment> assignments = engine.match(
+            Arrays.asList(r),
+            Arrays.asList()
+        );
+        assertEquals(0, assignments.size());
+    }
+
+    /**
+     * 验证Project空任务时的分配规划。
+     */
+    @Test
+    public void testProjectEmptyPlanAssignments() {
+        Project p = new Project("Empty");
+        p.addResearcher(new Researcher("R", 10));
+        List<MatchingEngine.Assignment> assignments = p.planAssignments();
+        assertEquals(0, assignments.size());
+    }
+
+    /**
+     * 测试Project空风险时的分析结果。
+     */
+    @Test
+    public void testProjectEmptyRiskAnalysis() {
+        Project p = new Project("NoRisk");
+        RiskAnalyzer.SimulationResult result = p.analyzeRisk(100);
+        assertEquals(0.0, result.getMeanImpact(), 0.0001);
+    }
+
+    /**
+     * 验证ReportGenerator对空任务项目的报告。
+     */
+    @Test
+    public void testReportGeneratorEmptyTasks() {
+        Project p = new Project("Empty");
+        ReportGenerator gen = new ReportGenerator();
+        String report = gen.generate(p);
+        assertTrue(report.contains("Project:Empty"));
+        assertTrue(report.contains("CriticalPath:0"));
+    }
+
+    /**
+     * 测试BudgetOptimizer在零限额时的选择。
+     */
+    @Test
+    public void testBudgetOptimizerZeroLimit() {
+        Budget b = new Budget();
+        b.add(new Budget.Item("A", 10.0, 5.0, "CAT"));
+        BudgetOptimizer opt = new BudgetOptimizer();
+        BudgetOptimizer.Selection sel = opt.optimize(b, 0.0);
+        assertEquals(0, sel.getItems().size());
+        assertEquals(0.0, sel.getTotalCost(), 0.0001);
+    }
+
+    /**
+     * 验证BudgetOptimizer选择结果不会超出限额。
+     */
+    @Test
+    public void testBudgetOptimizerRespectLimit() {
+        Budget b = new Budget();
+        b.add(new Budget.Item("A", 100.0, 10.0, "CAT"));
+        b.add(new Budget.Item("B", 200.0, 15.0, "CAT"));
+        BudgetOptimizer opt = new BudgetOptimizer();
+        BudgetOptimizer.Selection sel = opt.optimize(b, 150.0);
+        assertTrue("总成本不应超过限额", sel.getTotalCost() <= 150.0);
+    }
+
+    /**
+     * 测试Task所有状态的完整转换。
+     */
+    @Test
+    public void testTaskAllStatusTransitions() {
+        Task t = new Task("Test", 5, Task.Priority.HIGH);
+        assertEquals(Task.Status.PLANNED, t.getStatus());
+        t.start();
+        assertEquals(Task.Status.IN_PROGRESS, t.getStatus());
+        t.complete();
+        assertEquals(Task.Status.DONE, t.getStatus());
+        
+        Task t2 = new Task("Test2", 5, Task.Priority.HIGH);
+        t2.cancel();
+        assertEquals(Task.Status.CANCELLED, t2.getStatus());
+    }
+
+    /**
+     * 验证Task优先级枚举的所有值。
+     */
+    @Test
+    public void testTaskAllPriorities() {
+        Task t1 = new Task("Low", 5, Task.Priority.LOW);
+        assertEquals(Task.Priority.LOW, t1.getPriority());
+        Task t2 = new Task("Medium", 5, Task.Priority.MEDIUM);
+        assertEquals(Task.Priority.MEDIUM, t2.getPriority());
+        Task t3 = new Task("High", 5, Task.Priority.HIGH);
+        assertEquals(Task.Priority.HIGH, t3.getPriority());
+        Task t4 = new Task("Critical", 5, Task.Priority.CRITICAL);
+        assertEquals(Task.Priority.CRITICAL, t4.getPriority());
+    }
+
+    /**
+     * 测试Researcher hasSkill方法的负数最小等级处理。
+     */
+    @Test
+    public void testResearcherHasSkillNegativeMinLevel() {
+        Researcher r = new Researcher("Test", 10);
+        r.addSkill("Java", 5);
+        assertTrue(r.hasSkill("Java", -1));
+        assertTrue(r.hasSkill("Java", 0));
+        assertFalse(r.hasSkill("Java", 10));
+    }
+
+    /**
+     * 验证所有Task.Status枚举值的计数。
+     */
+    @Test
+    public void testProjectAllStatusCounted() {
+        Project p = new Project("Test");
+        Task t1 = new Task("A", 5, Task.Priority.HIGH);
+        Task t2 = new Task("B", 5, Task.Priority.HIGH);
+        Task t3 = new Task("C", 5, Task.Priority.HIGH);
+        Task t4 = new Task("D", 5, Task.Priority.HIGH);
+        Task t5 = new Task("E", 5, Task.Priority.HIGH);
+        
+        p.addTask(t1);
+        p.addTask(t2);
+        p.addTask(t3);
+        p.addTask(t4);
+        p.addTask(t5);
+        
+        t1.start();
+        t2.complete();
+        t3.cancel();
+        
+        Map<Task.Status, Long> counts = p.statusCounts();
+        assertEquals(Long.valueOf(2), counts.get(Task.Status.PLANNED));
+        assertEquals(Long.valueOf(1), counts.get(Task.Status.IN_PROGRESS));
+        assertEquals(Long.valueOf(0), counts.get(Task.Status.BLOCKED));
+        assertEquals(Long.valueOf(1), counts.get(Task.Status.DONE));
+        assertEquals(Long.valueOf(1), counts.get(Task.Status.CANCELLED));
     }
 
     /*
