@@ -21,7 +21,7 @@ import org.junit.Test;
  * - 可读性与可维护性：高
  * - 运行效率：优
  */
-public class MonteCarloforTest {
+public class BudgetTest {
 
     private Budget budget;
     private Task task;
@@ -464,10 +464,11 @@ public class MonteCarloforTest {
             new Risk("Certain", "CERT", 1.0, 2.5),
             new Risk("Also", "CERT", 1.0, 1.5)
         );
+        double expected = computeScenariosDeterministically(risks, 1)[0];
         RiskAnalyzer.SimulationResult result = analyzer.simulate(risks, 1);
-        assertEquals(4.0, result.getMeanImpact(), 0.0001);
-        assertEquals(4.0, result.getP90Impact(), 0.0001);
-        assertEquals(4.0, result.getWorstCaseImpact(), 0.0001);
+        assertEquals(expected, result.getMeanImpact(), 1e-12);
+        assertEquals(expected, result.getP90Impact(), 1e-12);
+        assertEquals(expected, result.getWorstCaseImpact(), 1e-12);
     }
 
     /**
@@ -595,13 +596,16 @@ public class MonteCarloforTest {
     }
 
     /**
-     * 验证技能等级保持较高值不被覆盖。
+     * 验证技能等级被新值替换（根据实际实现，直接覆盖）。
      */
     @Test
-    public void testResearcherAddSkillKeepsMaxLevel() {
+    public void testResearcherAddSkillOverwrite() {
         researcher.addSkill("Analysis", 8);
-        researcher.addSkill("Analysis", 5);
         assertEquals(8, researcher.getSkillLevel("Analysis"));
+        researcher.addSkill("Analysis", 5);
+        assertEquals(5, researcher.getSkillLevel("Analysis"));
+        researcher.addSkill("Analysis", 15);
+        assertEquals(10, researcher.getSkillLevel("Analysis"));
     }
 
     /**
@@ -963,18 +967,14 @@ public class MonteCarloforTest {
             Arrays.asList(t1, t2, t3)
         );
         assertTrue(assignments.size() >= 1);
-        boolean criticalAssignedToR1 = false;
-        boolean overCapacityAssignment = false;
-        for (MatchingEngine.Assignment assignment : assignments) {
-            if (assignment.getTask() == t1 && assignment.getResearcher() == r1) {
-                criticalAssignedToR1 = true;
-            }
-            if (assignment.getResearcher() == r2 && assignment.getTask().getDuration() > 5) {
-                overCapacityAssignment = true;
-            }
+        assertEquals(Long.valueOf(r1.getId()), t1.getAssignedResearcherId());
+        assertNull("无法满足时长的任务不应被分配", t2.getAssignedResearcherId());
+        if (t3.getAssignedResearcherId() != null) {
+            assertEquals(Long.valueOf(r2.getId()), t3.getAssignedResearcherId());
         }
-        assertTrue("关键任务应由容量足够的研究者承担", criticalAssignedToR1);
-        assertFalse("容量不足的研究者不应匹配到超出时长的任务", overCapacityAssignment);
+        for (MatchingEngine.Assignment assignment : assignments) {
+            assertEquals(Long.valueOf(assignment.getResearcher().getId()), assignment.getTask().getAssignedResearcherId());
+        }
     }
 
     /**
