@@ -110,6 +110,46 @@ public class MonteCarloforTest {
         assertEquals(before, budget.getItems().size());
     }
 
+    /**
+     * 验证通胀预测边界临界值裁剪逻辑。
+     */
+    @Test
+    public void testBudgetForecastCostExactBounds() {
+        assertEquals(750.0, budget.forecastCost(-0.5), 0.0001);
+        assertEquals(3000.0, budget.forecastCost(1.0), 0.0001);
+        assertEquals(1500.0, budget.forecastCost(0.0), 0.0001);
+    }
+
+    /**
+     * 确保空预算的储备金遵循最小值要求。
+     */
+    @Test
+    public void testBudgetEmptyRequiredReserve() {
+        Budget emptyBudget = new Budget();
+        assertEquals(1000.0, emptyBudget.requiredReserve(), 0.0001);
+    }
+
+    /**
+     * 测试储备比例的精确边界值。
+     */
+    @Test
+    public void testBudgetSetReserveRatioExactBounds() {
+        budget.setReserveRatio(0.0);
+        budget.setReserveRatio(0.5);
+    }
+
+    /**
+     * 验证正常参数的Item构造。
+     */
+    @Test
+    public void testBudgetItemValidConstruction() {
+        Budget.Item item = new Budget.Item("Server", 2000.0, 1.5, "IT");
+        assertEquals("Server", item.getName());
+        assertEquals(2000.0, item.getCost(), 0.0001);
+        assertEquals(1.5, item.getValue(), 0.0001);
+        assertEquals("IT", item.getCategory());
+    }
+
     // ==================== Task 测试 ====================
 
     /**
@@ -240,6 +280,48 @@ public class MonteCarloforTest {
         assertNull(t.getRequiredSkills().get("C++"));
     }
 
+    /**
+     * 验证同一技能再次录入更低等级时不会降低原有要求。
+     */
+    @Test
+    public void testTaskRequireSkillKeepsHigherLevel() {
+        task.requireSkill("Design", 7);
+        task.requireSkill("Design", 4);
+        assertEquals(Integer.valueOf(7), task.getRequiredSkills().get("Design"));
+    }
+
+    /**
+     * 确认重复依赖不会被再次加入，保障集合去重逻辑。
+     */
+    @Test
+    public void testTaskAddDependencyDuplicate() {
+        Task dependency = new Task("Review", 3, Task.Priority.MEDIUM);
+        assertTrue(task.addDependency(dependency));
+        assertFalse(task.addDependency(dependency));
+    }
+
+    /**
+     * 检查调度设置在负数输入时的裁剪行为。
+     */
+    @Test
+    public void testTaskSetScheduleNegativeValues() {
+        task.setSchedule(5, 4, -3, 2);
+        assertEquals(5, task.getEst());
+        assertEquals(5, task.getEft());
+        assertEquals(0, task.getLst());
+        assertEquals(5, task.getLft());
+    }
+
+    /**
+     * 确认任务取消后再次开始不会改变状态。
+     */
+    @Test
+    public void testTaskStartAfterCancel() {
+        task.cancel();
+        task.start();
+        assertEquals(Task.Status.CANCELLED, task.getStatus());
+    }
+
     // ==================== Risk 测试 ====================
 
     /**
@@ -306,6 +388,30 @@ public class MonteCarloforTest {
         assertTrue(r4.compareTo(r5) < 0);
     }
 
+    /**
+     * 验证相同优先级时按影响排序，相同影响时按名称排序。
+     */
+    @Test
+    public void testRiskCompareToSamePriority() {
+        Risk r1 = new Risk("B", "CAT", 0.5, 0.6);
+        Risk r2 = new Risk("A", "CAT", 0.5, 0.6);
+        assertTrue(r1.compareTo(r2) > 0);
+        assertEquals(0, r1.compareTo(r1));
+    }
+
+    /**
+     * 测试边界得分的优先级分配。
+     */
+    @Test
+    public void testRiskPriorityBoundary() {
+        Risk r1 = new Risk("Exact05", "CAT", 1.0, 0.5);
+        assertEquals(3, r1.priority());
+        Risk r2 = new Risk("Exact025", "CAT", 0.5, 0.5);
+        assertEquals(2, r2.priority());
+        Risk r3 = new Risk("Zero", "CAT", 0.0, 0.0);
+        assertEquals(0, r3.priority());
+    }
+
     // ==================== RiskAnalyzer 测试 ====================
 
     /**
@@ -346,6 +452,22 @@ public class MonteCarloforTest {
         assertEquals(expectedMean, result.getMeanImpact(), 1e-12);
         assertEquals(expectedP90, result.getP90Impact(), 1e-12);
         assertEquals(expectedWorst, result.getWorstCaseImpact(), 1e-12);
+    }
+
+    /**
+     * 测试概率为1时的最坏情况计算。
+     */
+    @Test
+    public void testRiskAnalyzerAllRisksTrigger() {
+        RiskAnalyzer analyzer = new RiskAnalyzer();
+        List<Risk> risks = Arrays.asList(
+            new Risk("Certain", "CERT", 1.0, 2.5),
+            new Risk("Also", "CERT", 1.0, 1.5)
+        );
+        RiskAnalyzer.SimulationResult result = analyzer.simulate(risks, 1);
+        assertEquals(4.0, result.getMeanImpact(), 0.0001);
+        assertEquals(4.0, result.getP90Impact(), 0.0001);
+        assertEquals(4.0, result.getWorstCaseImpact(), 0.0001);
     }
 
     /**
@@ -473,6 +595,16 @@ public class MonteCarloforTest {
     }
 
     /**
+     * 验证技能等级保持较高值不被覆盖。
+     */
+    @Test
+    public void testResearcherAddSkillKeepsMaxLevel() {
+        researcher.addSkill("Analysis", 8);
+        researcher.addSkill("Analysis", 5);
+        assertEquals(8, researcher.getSkillLevel("Analysis"));
+    }
+
+    /**
      * 测试任务完成操作，验证容量释放与评分更新。
      */
     @Test
@@ -484,6 +616,25 @@ public class MonteCarloforTest {
         assertEquals(10, researcher.getCapacity());
         assertEquals(24.0, researcher.getRating(), 0.0001);
         assertFalse(researcher.completeTask(null, 50.0));
+    }
+
+    /**
+     * 确保空任务不会分配且容量保持不变。
+     */
+    @Test
+    public void testResearcherAssignNullTask() {
+        assertFalse(researcher.assignTask(null));
+        assertEquals(10, researcher.getCapacity());
+    }
+
+    /**
+     * 验证失败分配不会改变剩余容量。
+     */
+    @Test
+    public void testResearcherAssignTaskFailureKeepsCapacity() {
+        Task heavy = new Task("Heavy", 15, Task.Priority.CRITICAL);
+        assertFalse(researcher.assignTask(heavy));
+        assertEquals(10, researcher.getCapacity());
     }
 
     /**
@@ -560,6 +711,27 @@ public class MonteCarloforTest {
         LocalDateTime end = LocalDateTime.of(2024, 1, 1, 12, 0);
         resource.cancel(null);
         assertTrue(resource.book(start, end));
+    }
+
+    /**
+     * 验证同一时间段不能重复预定。
+     */
+    @Test
+    public void testResourceBookSameTimeSlotTwice() {
+        LocalDateTime start = LocalDateTime.of(2024, 1, 1, 9, 0);
+        LocalDateTime end = LocalDateTime.of(2024, 1, 1, 12, 0);
+        assertTrue(resource.book(start, end));
+        assertFalse(resource.book(start, end));
+    }
+
+    /**
+     * 确认结束时间等于开始时间的无效预定被拒绝。
+     */
+    @Test
+    public void testResourceBookSameStartEnd() {
+        LocalDateTime time = LocalDateTime.of(2024, 1, 1, 9, 0);
+        assertFalse(resource.book(time, time));
+        assertFalse(resource.isAvailable(time, time));
     }
 
     // ==================== IdGenerator 测试 ====================
@@ -656,10 +828,8 @@ public class MonteCarloforTest {
         t2.addDependency(t1);
         t3.addDependency(t2);
         List<Task> order = GraphUtils.topologicalSort(Arrays.asList(t1, t2, t3));
-        assertEquals(3, order.size());
-        assertTrue(order.contains(t1));
-        assertTrue(order.contains(t2));
-        assertTrue(order.contains(t3));
+        List<Task> expectedOrder = Arrays.asList(t3, t2, t1);
+        assertEquals(expectedOrder, order);
     }
 
     /**
@@ -691,6 +861,14 @@ public class MonteCarloforTest {
     }
 
     /**
+     * 空任务集合的最长路径时长应为0。
+     */
+    @Test
+    public void testGraphUtilsLongestPathEmpty() {
+        assertEquals(0, GraphUtils.longestPathDuration(Arrays.asList()));
+    }
+
+    /**
      * 验证调度器在正向与反向遍历时正确设置时间窗口。
      */
     @Test
@@ -715,6 +893,28 @@ public class MonteCarloforTest {
         assertEquals(5, t3.getEft());
         assertEquals(0, t3.getLst());
         assertEquals(5, t3.getLft());
+    }
+
+    /**
+     * 调度空任务集不应抛出异常。
+     */
+    @Test
+    public void testSchedulerWithEmptyTasks() {
+        Scheduler scheduler = new Scheduler();
+        scheduler.schedule(Arrays.asList());
+    }
+
+    /**
+     * 存在环路时调度器应抛出异常。
+     */
+    @Test(expected = DomainException.class)
+    public void testSchedulerWithCycleThrows() {
+        Task t1 = new Task("A", 3, Task.Priority.HIGH);
+        Task t2 = new Task("B", 2, Task.Priority.MEDIUM);
+        t1.addDependency(t2);
+        t2.addDependency(t1);
+        Scheduler scheduler = new Scheduler();
+        scheduler.schedule(Arrays.asList(t1, t2));
     }
 
     /**
@@ -810,6 +1010,19 @@ public class MonteCarloforTest {
         Task t = new Task("BigTask", 10, Task.Priority.HIGH);
         List<MatchingEngine.Assignment> assignments = engine.match(Arrays.asList(r), Arrays.asList(t));
         assertEquals(0, assignments.size());
+    }
+
+    /**
+     * 验证任务在匹配后记录研究者ID。
+     */
+    @Test
+    public void testMatchingEngineAssignsTaskIds() {
+        MatchingEngine engine = new MatchingEngine();
+        Researcher r = new Researcher("Frank", 10);
+        Task t = new Task("Implement", 5, Task.Priority.HIGH);
+        List<MatchingEngine.Assignment> assignments = engine.match(Arrays.asList(r), Arrays.asList(t));
+        assertEquals(1, assignments.size());
+        assertEquals(Long.valueOf(r.getId()), t.getAssignedResearcherId());
     }
 
     // ==================== Project 测试 ====================
@@ -940,6 +1153,36 @@ public class MonteCarloforTest {
         RiskAnalyzer.SimulationResult result = project.analyzeRisk(10);
         assertNotNull(result);
         assertTrue(result.getMeanImpact() >= 0);
+    }
+
+    /**
+     * 测试获取不存在的任务和研究者时返回null。
+     */
+    @Test
+    public void testProjectGetNonExistentEntities() {
+        assertNull(project.getTask(999999L));
+        assertNull(project.getResearcher(888888L));
+    }
+
+    /**
+     * 空项目的关键路径时长应为0。
+     */
+    @Test
+    public void testProjectEmptyCriticalPath() {
+        Project emptyProject = new Project("Empty");
+        assertEquals(0, emptyProject.criticalPathDuration());
+    }
+
+    /**
+     * 测试空项目的状态统计，所有状态计数应为0。
+     */
+    @Test
+    public void testProjectEmptyStatusCounts() {
+        Project emptyProject = new Project("Empty");
+        Map<Task.Status, Long> counts = emptyProject.statusCounts();
+        for (Task.Status status : Task.Status.values()) {
+            assertEquals(Long.valueOf(0), counts.get(status));
+        }
     }
 
     // ==================== ReportGenerator 测试 ====================
