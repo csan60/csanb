@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite tests="198" failures="0" name="net.mooctest.StudentTest" time="0.126" errors="0" skipped="0">
+  <properties>
+    <property name="jansi.mode" value="force"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64"/>
+    <property name="java.vm.version" value="25.462-b08"/>
+    <property name="java.vm.vendor" value="Private Build"/>
+    <property name="maven.multiModuleProjectDirectory" value="/home/engine/project/student-grade-management-system_1762008416962"/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="path.separator" value=":"/>
+    <property name="guice.disable.misplaced.annotation.check" value="true"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="/home/engine/project/student-grade-management-system_1762008416962"/>
+    <property name="java.runtime.version" value="1.8.0_462-8u462-ga~us1-0ubuntu2~24.04.2-b08"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
+    <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/endorsed"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="line.separator" value="
+"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="os.name" value="Linux"/>
+    <property name="classworlds.conf" value="/usr/share/maven/bin/m2.conf"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/java/packages/lib/amd64:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib"/>
+    <property name="maven.conf" value="/usr/share/maven/conf"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="52.0"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="os.version" value="5.10.223"/>
+    <property name="library.jansi.path" value="/usr/share/maven/lib/jansi-native"/>
+    <property name="user.home" value="/home/engine"/>
+    <property name="user.timezone" value="Etc/UTC"/>
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="user.name" value="engine"/>
+    <property name="java.class.path" value="/usr/share/maven/boot/plexus-classworlds-2.x.jar"/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.home" value="/usr/lib/jvm/java-8-openjdk-amd64/jre"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher clean test"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="user.language" value="en"/>
+    <property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.version" value="1.8.0_462"/>
+    <property name="java.ext.dirs" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext:/usr/java/packages/lib/ext"/>
+    <property name="sun.boot.class.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/classes"/>
+    <property name="java.vendor" value="Private Build"/>
+    <property name="java.specification.maintenance.version" value="6"/>
+    <property name="maven.home" value="/usr/share/maven"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="sun.cpu.isalist" value=""/>
+  </properties>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentEqualsSameObject" time="0.025"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentDateOfBirthToday" time="0.009"/>
+  <testcase classname="net.mooctest.StudentTest" name="testReportServiceBuildTranscriptSkipEnrolled" time="0.039"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryFindByNameNull" time="0.002"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseConstructorNonPositiveCreditHours" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentEqualsNotGradeComponent" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequirePastOrPresentNull" time="0.003"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryFindByIdNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordScoreZero" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRecordGrade" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseHashCode" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositoryDeleteById" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequirePositiveZero" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetCodeToUpperCase" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordScore100" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryFindByCode" time="0.002"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceComputeGpa" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentEqualsNotStudent" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositorySave" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationExceptionConstructor" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentSetType" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentHashCode" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordSetScoreGreaterThan100" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentEqualsSameObject" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentConstructorAndGetters" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceRecordGradeEnrollmentNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentMarkIncompleteFromDropped" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositoryFindByIdNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaGreaterThan100" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testDomainExceptionConstructorWithCause" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentFutureDateOfBirth" time="0.002"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositorySave" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequireBetweenGreaterThanMax" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptAddItemNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradingPolicyConstructorNullComponents" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositorySaveNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentSetWeight" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentGetGradesByComponentUnmodifiable" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorNullCourseId" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradingPolicyConstructorAndGetters" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRecordGradeDropped" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentTypeEnumValues" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordConstructorScoreGreaterThan100" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceEnroll" time="0.005"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceEnrollCourseNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testReportServiceBuildTranscript" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositoryFindById" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceUpdateGrade" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceComputeEnrollmentPercentageNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryFindByNameNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentDrop" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordConstructorNegativeScore" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testReportServiceBuildTranscriptSkipDropped" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentWeightZero" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorNonPositiveYear" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryFindByNameCaseInsensitive" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradingPolicyGetComponentsUnmodifiable" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary62" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary66" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary69" time="0.002"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary72" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary76" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary79" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary82" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary86" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBoundary92" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentMarkIncompleteFromCompleted" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequireNonBlankEmpty" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentSetTypeNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorNullTerm" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentGetAverageScorePartial" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceDrop" time="0.002"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceEnsureComponentExists" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentWeightOne" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentEqualsSameType" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentConstructorWeightGreaterThanOne" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetTitle" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequireNonNegativePositive" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testReportServiceBuildTranscriptCourseNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorNegativeYear" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentConstructorNegativeWeight" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceComputePercentageNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequireBetweenLessThanMin" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseConstructorNullTitle" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptGetItemsUnmodifiable" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentEqualsSameObject" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryFindByName" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequireNonNegativeNegative" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentGetAverageScoreNullComponents" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRecordGradeNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentSetName" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryFindAll" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetCodeNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptComputeCumulativeGpa" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentGetAverageScoreEmptyComponents" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentEqualsDifferentStudent" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentSetWeightNegative" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositoryFindByStudentId" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpa100" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentSetWeightGreaterThanOne" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentConstructorAndGetters" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptComputeCumulativeGpaDifferentCredits" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositorySave" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceComputePercentage" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpa0" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaA" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaB" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaC" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaD" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaF" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryFindById" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentEqualsDifferentEnrollment" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentSetNameNull" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentSetDateOfBirth" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentNameTrim" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testDomainExceptionConstructor" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseConstructorBlankCode" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetTitleBlank" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordSetScore" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositorySaveNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseCodeToUpperCase" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentHashCode" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentSetNullDateOfBirth" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentGetAverageScore" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseConstructorNegativeCreditHours" time="0.002"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentSetNameWithSpaces" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetCreditHours" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryFindAll" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordSetScoreNegative" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentConstructorNullType" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryDeleteById" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceEnsureComponentExistsNotInPolicy" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositoryFindAll" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTermEnumValues" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testReportServiceBuildTranscriptStudentNotFound" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordConstructorNullType" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseConstructorBlankTitle" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseEqualsNotCourse" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetTitleNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentConstructorNullName" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetCreditHoursNegative" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceRecordGrade" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentComplete" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequireNonNegativeZero" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryFindByCodeCaseInsensitive" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentCompleteDropped" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradingPolicyConstructorWeightNotOne" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositoryFindByCourseId" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequireNonBlankNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptAddItem" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeComponentEqualsDifferentType" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptConstructor" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryFindByCodeNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBPlus" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaCPlus" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaDPlus" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseEqualsSameObject" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetCode" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentSetNameBlank" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetCreditHoursZero" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseTitleTrim" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaAMinus" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaBMinus" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseCodeTrim" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaCMinus" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaNegative" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentConstructorBlankName" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceToGpaDMinus" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentStatusEnumValues" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseConstructorNullCode" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentHashCode" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryFindById" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryFindByIdNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradingPolicyConstructorEmptyComponents" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptLineItemConstructorAndGetters" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseRepositoryFindByCodeNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentEqualsNotEnrollment" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceComputeEnrollmentPercentage" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseSetCodeBlank" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testTranscriptComputeCumulativeGpaEmpty" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeServiceRecordGradeComponentNotInPolicy" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentRepositorySaveNull" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentRepositoryDeleteById" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorAndGetters" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testStudentSetFutureDateOfBirth" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorBlankCourseId" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseEqualsDifferentCourse" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceDropNotFound" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentDropCompleted" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceEnrollStudentNotFound" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorNullStudentId" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentMarkIncomplete" time="0.001"/>
+  <testcase classname="net.mooctest.StudentTest" name="testCourseConstructorAndGetters" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentGetAverageScoreZeroTotalWeight" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentServiceEnrollAlreadyEnrolled" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testValidationUtilRequirePositiveNegative" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testGradeRecordConstructorAndGetters" time="0"/>
+  <testcase classname="net.mooctest.StudentTest" name="testEnrollmentConstructorBlankStudentId" time="0"/>
+</testsuite>
