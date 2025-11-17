@@ -1,6 +1,0 @@
-#设置当前温度为10℃
- 
- temprature1: 7
- temprature2: 7
- temprature3: 7
- expect: 0
