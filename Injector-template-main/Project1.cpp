@@ -1,4 +1,4 @@
-﻿// Project1.cpp : 定义应用程序的入口点。
+// Project1.cpp : 定义应用程序的入口点。
 //
 
 #include "framework.h"
@@ -16,7 +16,45 @@
 #include <stdarg.h>
 #include <psapi.h>
 #include <vector>
+#include <string>
+#include <sstream>
+#include <memory>
+#include <cstdio>
 using namespace Gdiplus;
+
+static const UINT WM_TRAYICON = WM_APP + 20;
+static const UINT WM_AI_RESPONSE = WM_APP + 21;
+
+enum TrayMenuCommandId
+{
+    IDM_TRAY_SHOW = 40001,
+    IDM_TRAY_EXIT = 40002,
+};
+
+struct AiConfig
+{
+    WCHAR endpoint[512];
+    WCHAR apiKey[512];
+    WCHAR model[128];
+};
+
+struct AiResponsePayload
+{
+    bool success;
+    std::wstring message;
+};
+
+static AiConfig g_aiConfig = {
+    L"https://api.openai.com/v1/chat/completions",
+    L"",
+    L"gpt-3.5-turbo"
+};
+
+static bool g_autoHide = true;
+static std::wstring g_configFilePath;
+static NOTIFYICONDATAW g_trayIconData = {};
+static bool g_trayIconVisible = false;
+static HWND g_aiWindow = nullptr;
 
 // 调试控制台：创建并输出
 static void SetupDebugConsole() {
@@ -83,6 +121,23 @@ enum
     IDC_STATIC_IMAGE = 2110,
     IDC_BTN_DONATE = 2111,
     IDC_BTN_DONATE2 = 2112,
+
+    // AI功能控件
+    IDC_BTN_AI_CONFIG = 2120,
+    IDC_BTN_AI_HELPER = 2121,
+    IDC_EDIT_AI_ENDPOINT = 2122,
+    IDC_EDIT_AI_KEY = 2123,
+    IDC_EDIT_AI_MODEL = 2124,
+    IDC_STATIC_AI_ENDPOINT = 2125,
+    IDC_STATIC_AI_KEY = 2126,
+    IDC_STATIC_AI_MODEL = 2127,
+    IDC_BTN_AI_SAVE = 2128,
+    IDC_BTN_AI_TEST = 2129,
+    IDC_EDIT_AI_QUESTION = 2130,
+    IDC_EDIT_AI_ANSWER = 2131,
+    IDC_BTN_AI_ASK = 2132,
+    IDC_CHK_AUTO_HIDE = 2133,
+    IDC_BTN_HIDE_TRAY = 2134,
 };
 
 // 状态
@@ -595,12 +650,298 @@ static void ApplyFoundPath(HWND hWnd, const WCHAR* path)
     SetStatus(hWnd, L"状态：已找到 CXExam.exe");
 }
 
+static void LoadAiConfig()
+{
+    WCHAR configPath[MAX_PATH] = L"";
+    GetModuleFileNameW(nullptr, configPath, MAX_PATH);
+    PathRemoveFileSpecW(configPath);
+    PathAppendW(configPath, L"ai_config.ini");
+    
+    GetPrivateProfileStringW(L"AI", L"Endpoint", g_aiConfig.endpoint, g_aiConfig.endpoint, 512, configPath);
+    GetPrivateProfileStringW(L"AI", L"ApiKey", L"", g_aiConfig.apiKey, 512, configPath);
+    GetPrivateProfileStringW(L"AI", L"Model", g_aiConfig.model, g_aiConfig.model, 128, configPath);
+    g_autoHide = GetPrivateProfileIntW(L"Settings", L"AutoHide", 1, configPath) != 0;
+    
+    DebugPrintFormat(L"[Config] Loaded: Endpoint=%ls, Model=%ls, AutoHide=%d", 
+        g_aiConfig.endpoint, g_aiConfig.model, g_autoHide);
+}
+
+static void SaveAiConfig()
+{
+    WCHAR configPath[MAX_PATH] = L"";
+    GetModuleFileNameW(nullptr, configPath, MAX_PATH);
+    PathRemoveFileSpecW(configPath);
+    PathAppendW(configPath, L"ai_config.ini");
+    
+    WritePrivateProfileStringW(L"AI", L"Endpoint", g_aiConfig.endpoint, configPath);
+    WritePrivateProfileStringW(L"AI", L"ApiKey", g_aiConfig.apiKey, configPath);
+    WritePrivateProfileStringW(L"AI", L"Model", g_aiConfig.model, configPath);
+    
+    WCHAR autoHideStr[8];
+    wsprintfW(autoHideStr, L"%d", g_autoHide ? 1 : 0);
+    WritePrivateProfileStringW(L"Settings", L"AutoHide", autoHideStr, configPath);
+    
+    DebugPrintFormat(L"[Config] Saved: Endpoint=%ls, Model=%ls, AutoHide=%d", 
+        g_aiConfig.endpoint, g_aiConfig.model, g_autoHide);
+}
+
+static bool CreateTrayIcon(HWND hwnd)
+{
+    if (g_trayIconVisible) return true;
+    
+    ZeroMemory(&g_trayIconData, sizeof(g_trayIconData));
+    g_trayIconData.cbSize = sizeof(NOTIFYICONDATAW);
+    g_trayIconData.hWnd = hwnd;
+    g_trayIconData.uID = 1;
+    g_trayIconData.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    g_trayIconData.uCallbackMessage = WM_TRAYICON;
+    g_trayIconData.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_SMALL));
+    lstrcpyW(g_trayIconData.szTip, L"智能注入助手");
+    
+    if (Shell_NotifyIconW(NIM_ADD, &g_trayIconData))
+    {
+        g_trayIconVisible = true;
+        DebugPrintFormat(L"[Tray] Icon created");
+        return true;
+    }
+    return false;
+}
+
+static void RemoveTrayIcon()
+{
+    if (g_trayIconVisible)
+    {
+        Shell_NotifyIconW(NIM_DELETE, &g_trayIconData);
+        g_trayIconVisible = false;
+        DebugPrintFormat(L"[Tray] Icon removed");
+    }
+}
+
+static void ShowTrayMenu(HWND hwnd)
+{
+    HMENU hMenu = CreatePopupMenu();
+    if (!hMenu) return;
+    
+    AppendMenuW(hMenu, MF_STRING, IDM_TRAY_SHOW, L"显示窗口");
+    AppendMenuW(hMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenuW(hMenu, MF_STRING, IDM_TRAY_EXIT, L"退出");
+    
+    POINT pt;
+    GetCursorPos(&pt);
+    SetForegroundWindow(hwnd);
+    TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, nullptr);
+    PostMessage(hwnd, WM_NULL, 0, 0);
+    DestroyMenu(hMenu);
+}
+
+static void HideWindowToTray(HWND hwnd)
+{
+    if (!hwnd) return;
+    if (CreateTrayIcon(hwnd))
+    {
+        ShowWindow(hwnd, SW_HIDE);
+        DebugPrintFormat(L"[Tray] Window hidden to tray");
+    }
+}
+
+static void RestoreWindowFromTray(HWND hwnd)
+{
+    if (!hwnd) return;
+    if (g_trayIconVisible)
+    {
+        RemoveTrayIcon();
+    }
+    ShowWindow(hwnd, SW_SHOWNORMAL);
+    SetForegroundWindow(hwnd);
+    DebugPrintFormat(L"[Tray] Window restored from tray");
+}
+
+static std::wstring CallAiApi(const std::wstring& question)
+{
+    DebugPrintFormat(L"[AI] Calling API with question: %ls", question.c_str());
+    
+    if (wcslen(g_aiConfig.apiKey) == 0)
+    {
+        return L"错误：未配置API Key，请先在AI配置中设置。";
+    }
+    
+    std::wstring jsonBody = L"{\"model\":\"";
+    jsonBody += g_aiConfig.model;
+    jsonBody += L"\",\"messages\":[{\"role\":\"user\",\"content\":\"";
+    
+    std::wstring escapedQuestion = question;
+    size_t pos = 0;
+    while ((pos = escapedQuestion.find(L"\"", pos)) != std::wstring::npos)
+    {
+        escapedQuestion.replace(pos, 1, L"\\\"");
+        pos += 2;
+    }
+    pos = 0;
+    while ((pos = escapedQuestion.find(L"\n", pos)) != std::wstring::npos)
+    {
+        escapedQuestion.replace(pos, 1, L"\\n");
+        pos += 2;
+    }
+    
+    jsonBody += escapedQuestion;
+    jsonBody += L"\"}]}";
+    
+    int utf8Len = WideCharToMultiByte(CP_UTF8, 0, jsonBody.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (utf8Len == 0) return L"错误：转换失败";
+    
+    std::unique_ptr<char[]> utf8Body(new char[utf8Len]);
+    WideCharToMultiByte(CP_UTF8, 0, jsonBody.c_str(), -1, utf8Body.get(), utf8Len, nullptr, nullptr);
+    
+    URL_COMPONENTS uc = {};
+    uc.dwStructSize = sizeof(uc);
+    WCHAR host[256] = L"";
+    WCHAR path[2048] = L"";
+    uc.lpszHostName = host;
+    uc.dwHostNameLength = _countof(host);
+    uc.lpszUrlPath = path;
+    uc.dwUrlPathLength = _countof(path);
+    
+    if (!InternetCrackUrlW(g_aiConfig.endpoint, 0, 0, &uc))
+    {
+        return L"错误：无效的API地址";
+    }
+    
+    HINTERNET hSession = WinHttpOpen(L"AiHelper/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, 
+        WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+    if (!hSession) return L"错误：无法创建HTTP会话";
+    
+    INTERNET_PORT port = uc.nPort ? (INTERNET_PORT)uc.nPort : 
+        (uc.nScheme == INTERNET_SCHEME_HTTPS ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT);
+    HINTERNET hConnect = WinHttpConnect(hSession, host, port, 0);
+    if (!hConnect)
+    {
+        WinHttpCloseHandle(hSession);
+        return L"错误：无法连接到服务器";
+    }
+    
+    DWORD flags = (uc.nScheme == INTERNET_SCHEME_HTTPS) ? WINHTTP_FLAG_SECURE : 0;
+    HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"POST", path, nullptr, 
+        WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
+    if (!hRequest)
+    {
+        WinHttpCloseHandle(hConnect);
+        WinHttpCloseHandle(hSession);
+        return L"错误：无法创建HTTP请求";
+    }
+    
+    if (flags & WINHTTP_FLAG_SECURE)
+    {
+        DWORD secFlags = SECURITY_FLAG_IGNORE_CERT_CN_INVALID | 
+                         SECURITY_FLAG_IGNORE_CERT_DATE_INVALID | 
+                         SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+        WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS, &secFlags, sizeof(secFlags));
+    }
+    
+    std::wstring headers = L"Content-Type: application/json\r\nAuthorization: Bearer ";
+    headers += g_aiConfig.apiKey;
+    
+    BOOL b = WinHttpSendRequest(hRequest, headers.c_str(), -1, utf8Body.get(), 
+        utf8Len - 1, utf8Len - 1, 0);
+    if (!b)
+    {
+        WinHttpCloseHandle(hRequest);
+        WinHttpCloseHandle(hConnect);
+        WinHttpCloseHandle(hSession);
+        return L"错误：发送请求失败";
+    }
+    
+    b = WinHttpReceiveResponse(hRequest, nullptr);
+    if (!b)
+    {
+        WinHttpCloseHandle(hRequest);
+        WinHttpCloseHandle(hConnect);
+        WinHttpCloseHandle(hSession);
+        return L"错误：接收响应失败";
+    }
+    
+    DWORD statusCode = 0;
+    DWORD statusCodeSize = sizeof(statusCode);
+    WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, 
+        nullptr, &statusCode, &statusCodeSize, nullptr);
+    
+    std::string responseData;
+    DWORD dwSize = 0;
+    BYTE buffer[4096];
+    do
+    {
+        dwSize = 0;
+        if (!WinHttpQueryDataAvailable(hRequest, &dwSize)) break;
+        if (dwSize == 0) break;
+        if (dwSize > sizeof(buffer)) dwSize = sizeof(buffer);
+        DWORD dwRead = 0;
+        if (!WinHttpReadData(hRequest, buffer, dwSize, &dwRead)) break;
+        if (dwRead == 0) break;
+        responseData.append((char*)buffer, dwRead);
+    } while (true);
+    
+    WinHttpCloseHandle(hRequest);
+    WinHttpCloseHandle(hConnect);
+    WinHttpCloseHandle(hSession);
+    
+    if (statusCode != 200)
+    {
+        WCHAR errMsg[256];
+        wsprintfW(errMsg, L"错误：HTTP %d - ", statusCode);
+        std::wstring result = errMsg;
+        
+        int wlen = MultiByteToWideChar(CP_UTF8, 0, responseData.c_str(), -1, nullptr, 0);
+        if (wlen > 0)
+        {
+            std::unique_ptr<WCHAR[]> wbuf(new WCHAR[wlen]);
+            MultiByteToWideChar(CP_UTF8, 0, responseData.c_str(), -1, wbuf.get(), wlen);
+            result += wbuf.get();
+        }
+        return result;
+    }
+    
+    int wlen = MultiByteToWideChar(CP_UTF8, 0, responseData.c_str(), -1, nullptr, 0);
+    if (wlen == 0) return L"错误：响应解码失败";
+    
+    std::unique_ptr<WCHAR[]> wideResponse(new WCHAR[wlen]);
+    MultiByteToWideChar(CP_UTF8, 0, responseData.c_str(), -1, wideResponse.get(), wlen);
+    
+    std::wstring fullResponse = wideResponse.get();
+    
+    size_t contentPos = fullResponse.find(L"\"content\":\"");
+    if (contentPos == std::wstring::npos)
+    {
+        return L"AI响应：\n" + fullResponse;
+    }
+    
+    contentPos += 11;
+    size_t endPos = fullResponse.find(L"\"", contentPos);
+    if (endPos == std::wstring::npos) endPos = fullResponse.length();
+    
+    std::wstring content = fullResponse.substr(contentPos, endPos - contentPos);
+    
+    pos = 0;
+    while ((pos = content.find(L"\\n", pos)) != std::wstring::npos)
+    {
+        content.replace(pos, 2, L"\r\n");
+        pos += 2;
+    }
+    pos = 0;
+    while ((pos = content.find(L"\\\"", pos)) != std::wstring::npos)
+    {
+        content.replace(pos, 2, L"\"");
+        pos += 1;
+    }
+    
+    DebugPrintFormat(L"[AI] Response: %ls", content.c_str());
+    return content;
+}
+
 static bool FindCxInFolderRecursive(const WCHAR* folder, WCHAR* outPath, int depthLimit = 64)
 {
     if (depthLimit <= 0) return false;
     WCHAR pattern[MAX_PATH] = L"";
     size_t lenFolder = lstrlenW(folder);
-    if (lenFolder + 2 >= MAX_PATH) return false; // 需要添加 "\\*" 和 终止符
+    if (lenFolder + 2 >= MAX_PATH) return false;
     HRESULT hrp = StringCchPrintfW(pattern, MAX_PATH, L"%s\\*", folder);
     if (FAILED(hrp)) return false;
     WIN32_FIND_DATAW ffd;
@@ -613,7 +954,6 @@ static bool FindCxInFolderRecursive(const WCHAR* folder, WCHAR* outPath, int dep
         size_t lenName = lstrlenW(ffd.cFileName);
         if (lenFolder + 1 + lenName + 1 >= MAX_PATH)
         {
-            // 路径过长，跳过
             continue;
         }
         HRESULT hrf = StringCchPrintfW(full, MAX_PATH, L"%s\\%s", folder, ffd.cFileName);
@@ -641,6 +981,8 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    AiConfigWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    AiHelperWndProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -653,6 +995,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     SetupDebugConsole();
     DebugPrintFormat(L"[Boot] Injector started. CmdLine: %ls", GetCommandLineW());
 
+    LoadAiConfig();
+    
     RelaunchSelfElevatedIfNeeded();
 
     // TODO: 在此处放置代码。
@@ -863,7 +1207,85 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDC_BTN_DONATE2:
                 SendMessageW(hWnd, WM_COMMAND, MAKEWPARAM(IDC_BTN_DONATE, BN_CLICKED), 0);
                 break;
+            case IDC_CHK_AUTO_HIDE:
+                {
+                    HWND hChk = GetDlgItem(hWnd, IDC_CHK_AUTO_HIDE);
+                    if (hChk)
+                    {
+                        LRESULT state = SendMessageW(hChk, BM_GETCHECK, 0, 0);
+                        g_autoHide = (state == BST_CHECKED);
+                        SaveAiConfig();
+                        DebugPrintFormat(L"[Settings] AutoHide = %d", g_autoHide);
+                    }
+                }
+                break;
+            case IDC_BTN_HIDE_TRAY:
+                HideWindowToTray(hWnd);
+                break;
+            case IDC_BTN_AI_CONFIG:
+                {
+                    WNDCLASSEXW wc = {};
+                    wc.cbSize = sizeof(wc);
+                    wc.hInstance = hInst;
+                    wc.lpszClassName = L"AiConfigWnd";
+                    wc.lpfnWndProc = AiConfigWndProc;
+                    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+                    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+                    if (!GetClassInfoExW(hInst, L"AiConfigWnd", &wc))
+                    {
+                        RegisterClassExW(&wc);
+                    }
+                    
+                    HWND hConfigWnd = CreateWindowExW(0, L"AiConfigWnd", L"AI配置",
+                        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
+                        CW_USEDEFAULT, CW_USEDEFAULT, 500, 280, hWnd, nullptr, hInst, nullptr);
+                    if (hConfigWnd)
+                    {
+                        CenterWindowOnScreen(hConfigWnd);
+                        ShowWindow(hConfigWnd, SW_SHOWNORMAL);
+                        UpdateWindow(hConfigWnd);
+                    }
+                }
+                break;
+            case IDC_BTN_AI_HELPER:
+                {
+                    if (g_aiWindow && IsWindow(g_aiWindow))
+                    {
+                        SetForegroundWindow(g_aiWindow);
+                        break;
+                    }
+                    
+                    WNDCLASSEXW wc = {};
+                    wc.cbSize = sizeof(wc);
+                    wc.hInstance = hInst;
+                    wc.lpszClassName = L"AiHelperWnd";
+                    wc.lpfnWndProc = AiHelperWndProc;
+                    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+                    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+                    if (!GetClassInfoExW(hInst, L"AiHelperWnd", &wc))
+                    {
+                        RegisterClassExW(&wc);
+                    }
+                    
+                    g_aiWindow = CreateWindowExW(0, L"AiHelperWnd", L"AI答题助手",
+                        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME,
+                        CW_USEDEFAULT, CW_USEDEFAULT, 600, 500, hWnd, nullptr, hInst, nullptr);
+                    if (g_aiWindow)
+                    {
+                        CenterWindowOnScreen(g_aiWindow);
+                        ShowWindow(g_aiWindow, SW_SHOWNORMAL);
+                        UpdateWindow(g_aiWindow);
+                    }
+                }
+                break;
             // 移除退出菜单项
+            case IDM_TRAY_SHOW:
+                RestoreWindowFromTray(hWnd);
+                break;
+            case IDM_TRAY_EXIT:
+                RemoveTrayIcon();
+                PostQuitMessage(0);
+                break;
             case IDC_BTN_VISIT:
                 ShellExecuteW(hWnd, L"open", L"http://sjyssr.net", nullptr, nullptr, SW_SHOWNORMAL);
                 break;
@@ -905,6 +1327,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                             WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
                             8, 60, 140, 26, hWnd, (HMENU)IDC_BTN_LAUNCH, hInst, nullptr);
 
+                        HWND hAutoHide = CreateWindowW(L"BUTTON", L"启动后自动隐藏到托盘",
+                            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
+                            224, 60, 200, 24, hWnd, (HMENU)IDC_CHK_AUTO_HIDE, hInst, nullptr);
+                        if (hAutoHide)
+                        {
+                            SendMessageW(hAutoHide, BM_SETCHECK, g_autoHide ? BST_CHECKED : BST_UNCHECKED, 0);
+                        }
+
                         CreateWindowW(L"BUTTON", L"自动查找",
                             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
                             496, 28, 120, 26, hWnd, (HMENU)IDC_BTN_AUTO_FIND, hInst, nullptr);
@@ -913,6 +1343,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         CreateWindowW(L"STATIC", L"状态：等待操作",
                             WS_CHILD | WS_VISIBLE,
                             8, 92, 614, 22, hWnd, (HMENU)IDC_STATIC_STATUS, hInst, nullptr);
+
+                        CreateWindowW(L"BUTTON", L"AI配置",
+                            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                            8, 120, 100, 26, hWnd, (HMENU)IDC_BTN_AI_CONFIG, hInst, nullptr);
+
+                        CreateWindowW(L"BUTTON", L"AI答题助手",
+                            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                            116, 120, 100, 26, hWnd, (HMENU)IDC_BTN_AI_HELPER, hInst, nullptr);
+
+                        CreateWindowW(L"BUTTON", L"隐藏到托盘",
+                            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                            224, 120, 100, 26, hWnd, (HMENU)IDC_BTN_HIDE_TRAY, hInst, nullptr);
 
                         g_entered = true;
                         RepositionFooter(hWnd);
@@ -1108,7 +1550,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     }, hWnd, 0, nullptr);
                     if (hThread) CloseHandle(hThread);
 
-                    ShowWindow(hWnd, SW_HIDE);
+                    if (g_autoHide)
+                    {
+                        HideWindowToTray(hWnd);
+                    }
+                    else
+                    {
+                        SetForegroundWindow(hWnd);
+                    }
                     break;
                 }
                 else
@@ -1193,7 +1642,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }, hWnd, 0, nullptr);
             if (hThread) CloseHandle(hThread);
 
-            ShowWindow(hWnd, SW_HIDE);
+            if (g_autoHide)
+            {
+                HideWindowToTray(hWnd);
+            }
+            else
+            {
+                SetForegroundWindow(hWnd);
+            }
         }
         break;
             // 已移除选择文件夹逻辑
@@ -1259,6 +1715,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_APP + 3: // 未找到
         SetStatus(hWnd, L"状态：未找到 CXExam.exe，请手动选择或更换目录。");
         break;
+    case WM_TRAYICON:
+        if (lParam == WM_LBUTTONDBLCLK || lParam == WM_LBUTTONUP)
+        {
+            RestoreWindowFromTray(hWnd);
+        }
+        else if (lParam == WM_RBUTTONUP)
+        {
+            ShowTrayMenu(hWnd);
+        }
+        break;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
@@ -1277,7 +1743,308 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DeleteObject(g_hUIFont);
             g_hUIFont = nullptr;
         }
+        RemoveTrayIcon();
         PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
+LRESULT CALLBACK AiConfigWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_CREATE:
+        {
+            CreateWindowW(L"STATIC", L"API地址:", WS_CHILD | WS_VISIBLE,
+                8, 12, 100, 20, hWnd, (HMENU)IDC_STATIC_AI_ENDPOINT, hInst, nullptr);
+            CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", g_aiConfig.endpoint,
+                WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
+                110, 10, 370, 24, hWnd, (HMENU)IDC_EDIT_AI_ENDPOINT, hInst, nullptr);
+
+            CreateWindowW(L"STATIC", L"API Key:", WS_CHILD | WS_VISIBLE,
+                8, 42, 100, 20, hWnd, (HMENU)IDC_STATIC_AI_KEY, hInst, nullptr);
+            CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", g_aiConfig.apiKey,
+                WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_PASSWORD,
+                110, 40, 370, 24, hWnd, (HMENU)IDC_EDIT_AI_KEY, hInst, nullptr);
+
+            CreateWindowW(L"STATIC", L"模型:", WS_CHILD | WS_VISIBLE,
+                8, 72, 100, 20, hWnd, (HMENU)IDC_STATIC_AI_MODEL, hInst, nullptr);
+            CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", g_aiConfig.model,
+                WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL,
+                110, 70, 370, 24, hWnd, (HMENU)IDC_EDIT_AI_MODEL, hInst, nullptr);
+
+            CreateWindowW(L"BUTTON", L"保存配置", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+                110, 110, 100, 30, hWnd, (HMENU)IDC_BTN_AI_SAVE, hInst, nullptr);
+
+            CreateWindowW(L"BUTTON", L"测试连接", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                220, 110, 100, 30, hWnd, (HMENU)IDC_BTN_AI_TEST, hInst, nullptr);
+
+            CreateWindowW(L"STATIC",
+                L"使用说明：\n"
+                L"1. 支持OpenAI及兼容接口(如DeepSeek、Kimi等)\n"
+                L"2. API Key用于身份验证，请妥善保管\n"
+                L"3. 常用模型：gpt-3.5-turbo、gpt-4、deepseek-chat等\n"
+                L"4. 配置保存在程序目录的ai_config.ini文件中",
+                WS_CHILD | WS_VISIBLE | SS_LEFT,
+                8, 150, 474, 80, hWnd, nullptr, hInst, nullptr);
+
+            ApplyUIFont(hWnd);
+        }
+        break;
+    case WM_COMMAND:
+        switch (LOWORD(wParam))
+        {
+        case IDC_BTN_AI_SAVE:
+            {
+                GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_AI_ENDPOINT), g_aiConfig.endpoint, 512);
+                GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_AI_KEY), g_aiConfig.apiKey, 512);
+                GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_AI_MODEL), g_aiConfig.model, 128);
+                SaveAiConfig();
+                MessageBoxW(hWnd, L"配置已保存！", L"成功", MB_OK | MB_ICONINFORMATION);
+            }
+            break;
+        case IDC_BTN_AI_TEST:
+            {
+                GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_AI_ENDPOINT), g_aiConfig.endpoint, 512);
+                GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_AI_KEY), g_aiConfig.apiKey, 512);
+                GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_AI_MODEL), g_aiConfig.model, 128);
+                SaveAiConfig();
+
+                HWND hBtn = GetDlgItem(hWnd, IDC_BTN_AI_TEST);
+                if (hBtn)
+                {
+                    EnableWindow(hBtn, FALSE);
+                    SetWindowTextW(hBtn, L"测试中...");
+                }
+
+                struct AiTestContext { HWND hwnd; };
+                AiTestContext* ctx = new AiTestContext{ hWnd };
+                HANDLE hThread = CreateThread(nullptr, 0, [](LPVOID param)->DWORD {
+                    AiTestContext* ctxInner = static_cast<AiTestContext*>(param);
+                    std::wstring response = CallAiApi(L"请回复“OK”以确认接口可用。");
+                    AiResponsePayload* payload = new AiResponsePayload{ true, response };
+                    if (!PostMessageW(ctxInner->hwnd, WM_AI_RESPONSE, 2, (LPARAM)payload))
+                    {
+                        delete payload;
+                    }
+                    delete ctxInner;
+                    return 0;
+                }, ctx, 0, nullptr);
+
+                if (!hThread)
+                {
+                    delete ctx;
+                    if (hBtn)
+                    {
+                        EnableWindow(hBtn, TRUE);
+                        SetWindowTextW(hBtn, L"测试连接");
+                    }
+                    MessageBoxW(hWnd, L"无法创建测试线程。", L"错误", MB_OK | MB_ICONERROR);
+                }
+                else
+                {
+                    CloseHandle(hThread);
+                }
+            }
+            break;
+        }
+        break;
+    case WM_AI_RESPONSE:
+        if (wParam == 2)
+        {
+            AiResponsePayload* payload = reinterpret_cast<AiResponsePayload*>(lParam);
+            if (payload)
+            {
+                MessageBoxW(hWnd, payload->message.c_str(), L"测试结果", MB_OK | MB_ICONINFORMATION);
+                delete payload;
+            }
+            HWND hBtn = GetDlgItem(hWnd, IDC_BTN_AI_TEST);
+            if (hBtn)
+            {
+                EnableWindow(hBtn, TRUE);
+                SetWindowTextW(hBtn, L"测试连接");
+            }
+        }
+        break;
+    case WM_CLOSE:
+        DestroyWindow(hWnd);
+        break;
+    case WM_DESTROY:
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
+struct AiHelperContext
+{
+    bool busy;
+};
+
+LRESULT CALLBACK AiHelperWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    AiHelperContext* ctx = reinterpret_cast<AiHelperContext*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+
+    switch (message)
+    {
+    case WM_CREATE:
+        {
+            ctx = new AiHelperContext();
+            ctx->busy = false;
+            SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(ctx));
+
+            CreateWindowW(L"STATIC", L"输入题目:", WS_CHILD | WS_VISIBLE,
+                8, 12, 80, 20, hWnd, nullptr, hInst, nullptr);
+
+            CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"",
+                WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
+                8, 32, 570, 150, hWnd, (HMENU)IDC_EDIT_AI_QUESTION, hInst, nullptr);
+
+            CreateWindowW(L"BUTTON", L"AI解答 (F5)", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+                8, 190, 140, 30, hWnd, (HMENU)IDC_BTN_AI_ASK, hInst, nullptr);
+
+            CreateWindowW(L"STATIC", L"AI答案:", WS_CHILD | WS_VISIBLE,
+                8, 232, 80, 20, hWnd, nullptr, hInst, nullptr);
+
+            CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"",
+                WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL,
+                8, 252, 570, 190, hWnd, (HMENU)IDC_EDIT_AI_ANSWER, hInst, nullptr);
+
+            ApplyUIFont(hWnd);
+        }
+        break;
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDC_BTN_AI_ASK)
+        {
+            if (ctx && ctx->busy)
+            {
+                break;
+            }
+
+            WCHAR question[4096] = L"";
+            GetWindowTextW(GetDlgItem(hWnd, IDC_EDIT_AI_QUESTION), question, 4096);
+            if (wcslen(question) == 0)
+            {
+                MessageBoxW(hWnd, L"请先输入题目内容。", L"提示", MB_OK | MB_ICONWARNING);
+                break;
+            }
+
+            HWND hAnswer = GetDlgItem(hWnd, IDC_EDIT_AI_ANSWER);
+            if (hAnswer)
+            {
+                SetWindowTextW(hAnswer, L"正在与AI接口通讯，请稍候...");
+            }
+            HWND hBtnAsk = GetDlgItem(hWnd, IDC_BTN_AI_ASK);
+            if (hBtnAsk)
+            {
+                EnableWindow(hBtnAsk, FALSE);
+            }
+            if (ctx)
+            {
+                ctx->busy = true;
+            }
+
+            struct AiHelperRequest
+            {
+                HWND hwnd;
+                std::wstring prompt;
+            };
+
+            AiHelperRequest* req = new AiHelperRequest{ hWnd, std::wstring(question) };
+            HANDLE hThread = CreateThread(nullptr, 0, [](LPVOID param)->DWORD {
+                AiHelperRequest* request = static_cast<AiHelperRequest*>(param);
+                HWND targetWnd = request->hwnd;
+                std::wstring prompt = request->prompt;
+                delete request;
+
+                std::wstring fullPrompt = L"你是一个专业的答题助手，请结合题意给出详细的分析步骤和最终答案。\n\n题目：\n" + prompt;
+                std::wstring result = CallAiApi(fullPrompt);
+
+                AiResponsePayload* payload = new AiResponsePayload{ true, result };
+                if (!PostMessageW(targetWnd, WM_AI_RESPONSE, 1, (LPARAM)payload))
+                {
+                    delete payload;
+                }
+                return 0;
+            }, req, 0, nullptr);
+
+            if (!hThread)
+            {
+                delete req;
+                if (ctx)
+                {
+                    ctx->busy = false;
+                }
+                if (hBtnAsk)
+                {
+                    EnableWindow(hBtnAsk, TRUE);
+                }
+                MessageBoxW(hWnd, L"无法创建AI请求线程。", L"错误", MB_OK | MB_ICONERROR);
+            }
+            else
+            {
+                CloseHandle(hThread);
+            }
+        }
+        break;
+    case WM_AI_RESPONSE:
+        if (wParam == 1)
+        {
+            AiResponsePayload* payload = reinterpret_cast<AiResponsePayload*>(lParam);
+            if (payload)
+            {
+                HWND hAnswer = GetDlgItem(hWnd, IDC_EDIT_AI_ANSWER);
+                if (hAnswer)
+                {
+                    SetWindowTextW(hAnswer, payload->message.c_str());
+                }
+                delete payload;
+            }
+            HWND hBtnAsk = GetDlgItem(hWnd, IDC_BTN_AI_ASK);
+            if (hBtnAsk)
+            {
+                EnableWindow(hBtnAsk, TRUE);
+            }
+            if (ctx)
+            {
+                ctx->busy = false;
+            }
+        }
+        break;
+    case WM_SIZE:
+        {
+            RECT rc;
+            GetClientRect(hWnd, &rc);
+            int width = rc.right - 16;
+            int heightQuestion = 150;
+            int heightAnswer = rc.bottom - 270;
+            if (width < 200) width = 200;
+            if (heightAnswer < 80) heightAnswer = 80;
+
+            MoveWindow(GetDlgItem(hWnd, IDC_EDIT_AI_QUESTION), 8, 32, width, heightQuestion, TRUE);
+            MoveWindow(GetDlgItem(hWnd, IDC_EDIT_AI_ANSWER), 8, 252, width, heightAnswer, TRUE);
+        }
+        break;
+    case WM_KEYDOWN:
+        if (wParam == VK_F5)
+        {
+            SendMessageW(hWnd, WM_COMMAND, MAKELONG(IDC_BTN_AI_ASK, BN_CLICKED), 0);
+        }
+        break;
+    case WM_DESTROY:
+        if (ctx)
+        {
+            delete ctx;
+            SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0);
+        }
+        g_aiWindow = nullptr;
+        break;
+    case WM_CLOSE:
+        DestroyWindow(hWnd);
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
